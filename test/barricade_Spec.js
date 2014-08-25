@@ -1,20 +1,20 @@
 describe('Barricade', function () {
-    var global_copy;
+    var globalCopy;
 
-    function save_global_state() {
-        global_copy = {};
+    function saveGlobalState() {
+        globalCopy = {};
         for (var key in window) {
-            global_copy[key] = window[key];
+            globalCopy[key] = window[key];
         }
     }
 
-    function ensure_global_object_unpolluted() {
+    function ensureGlobalObjectUnpolluted() {
         it('does not pollute the global namespace', function () {
             for (var key in window) {
-                if (!global_copy.hasOwnProperty(key)) {
+                if (!globalCopy.hasOwnProperty(key)) {
                     // print pretty message
                     expect('window[' + key + ']').toBeUndefined();
-                } else if (global_copy[key] !== window[key]) {
+                } else if (globalCopy[key] !== window[key]) {
                     // print pretty message
                     expect('window[' + key + ']').toBe('unchanged');
                 }
@@ -31,7 +31,7 @@ describe('Barricade', function () {
     ///
     describe('Format with primitive types', function () {
         beforeEach(function () {
-            save_global_state();
+            saveGlobalState();
 
             this.namespace = {
                     existingMember: 1234,
@@ -59,7 +59,7 @@ describe('Barricade', function () {
             });
         });
 
-        ensure_global_object_unpolluted();
+        ensureGlobalObjectUnpolluted();
 
         it('should create classes on namespace', function () {
             expect(this.namespace.BooleanClass).toBeDefined();
@@ -101,24 +101,24 @@ describe('Barricade', function () {
             var types;
 
             beforeEach(function () {
-                save_global_state();
+                saveGlobalState();
 
                 types = [
                     {
                         'value': true,
                         'value2': false,
                         'constructor': this.namespace.BooleanClass,
-                        'primitive_type': Boolean
+                        'primitiveType': Boolean
                     }, {
                         'value': 1001,
                         'value2': -256,
                         'constructor': this.namespace.NumberClass,
-                        'primitive_type': Number
+                        'primitiveType': Number
                     }, {
                         'value': "some string 1",
                         'value2': "another string 2",
                         'constructor': this.namespace.StringClass,
-                        'primitive_type': String
+                        'primitiveType': String
                     }, {
                         'value': {
                             foo: "bar",
@@ -129,12 +129,12 @@ describe('Barricade', function () {
                             dolor: "sit amet",
                         },
                         'constructor': this.namespace.ObjectClass,
-                        'primitive_type': Object
+                        'primitiveType': Object
                     }, {
                         'value': [0, "a", 1, "b"],
                         'value2': [5, 4, 3, 2, 1],
                         'constructor': this.namespace.ArrayClass,
-                        'primitive_type': Array
+                        'primitiveType': Array
                     }
                 ];
 
@@ -143,7 +143,7 @@ describe('Barricade', function () {
                 });
             });
 
-            ensure_global_object_unpolluted();
+            ensureGlobalObjectUnpolluted();
 
             it('should create instances of class', function () {
                 types.forEach(function (type) {
@@ -152,10 +152,10 @@ describe('Barricade', function () {
                         .toBe(true);
                     
                     // should not be instance of other classes
-                    types.forEach(function (other_type) {
-                        if (type !== other_type) {
+                    types.forEach(function (otherType) {
+                        if (type !== otherType) {
                             expect(type.instance
-                                       .instanceof(other_type.constructor))
+                                       .instanceof(otherType.constructor))
                                 .toBe(false);
                         }
                     });
@@ -186,16 +186,16 @@ describe('Barricade', function () {
                 });
             });
 
-            it('get_primitive_type() should return type', function () {
+            it('getPrimitiveType() should return type', function () {
                 types.forEach(function (type) {
-                    expect(type.instance.get_primitive_type())
-                        .toBe(type.primitive_type);
+                    expect(type.instance.getPrimitiveType())
+                        .toBe(type.primitiveType);
                 });
             });
 
-            it('should have is_empty() return false', function () {
+            it('should have isEmpty() return false', function () {
                 types.forEach(function (type) {
-                    expect(type.instance.is_empty()).toBe(false);
+                    expect(type.instance.isEmpty()).toBe(false);
                 });
             });
 
@@ -206,7 +206,7 @@ describe('Barricade', function () {
                     delete type.instance.get;
                     delete type.instance.set;
                     delete type.instance.toJSON;
-                    delete type.instance.get_primitive_type;
+                    delete type.instance.getPrimitiveType;
 
                     for (key in type.instance) {
                         // should never be reached, but is sure to error out
@@ -220,7 +220,7 @@ describe('Barricade', function () {
             var types;
 
             beforeEach(function() {
-                save_global_state();
+                saveGlobalState();
 
                 types = [
                     {
@@ -246,7 +246,7 @@ describe('Barricade', function () {
                 });
             });
 
-            ensure_global_object_unpolluted();
+            ensureGlobalObjectUnpolluted();
 
             it('should create instances with default values', function () {
                 types.forEach(function (type) {
@@ -254,9 +254,9 @@ describe('Barricade', function () {
                 });
             });
 
-            it('should have is_empty() return true', function () {
+            it('should have isEmpty() return true', function () {
                 types.forEach(function (type) {
-                    expect(type.instance.is_empty()).toBe(true);
+                    expect(type.instance.isEmpty()).toBe(true);
                 });
             });
         });
@@ -268,47 +268,47 @@ describe('Barricade', function () {
     describe('Object formats', function () {
         describe('Instances from formats with fixed keys', function () {
             beforeEach(function () {
-                save_global_state();
+                saveGlobalState();
 
                 this.namespace = {};
 
                 this.namespace.FixedKeyClass = Barricade({
                     '@type': Object,
 
-                    'string_key': {
+                    'stringKey': {
                         '@type': String
                     },
-                    'boolean_key': {
+                    'booleanKey': {
                         '@type': Boolean
                     },
-                    'number_key': {
+                    'numberKey': {
                         '@type': Number
                     }
                 });
 
                 this.instance = this.namespace.FixedKeyClass.create({
-                    'string_key': "foo",
-                    'boolean_key': true,
-                    'number_key': 43987
+                    'stringKey': "foo",
+                    'booleanKey': true,
+                    'numberKey': 43987
                 });
             });
 
-            ensure_global_object_unpolluted();
+            ensureGlobalObjectUnpolluted();
 
             it('should have correct values on its keys', function () {
-                expect(this.instance.get('string_key').get()).toBe("foo");
-                expect(this.instance.get('boolean_key').get()).toBe(true);
-                expect(this.instance.get('number_key').get()).toBe(43987);
+                expect(this.instance.get('stringKey').get()).toBe("foo");
+                expect(this.instance.get('booleanKey').get()).toBe(true);
+                expect(this.instance.get('numberKey').get()).toBe(43987);
             });
 
-            it('.get_keys() should return array of keys', function () {
-                var keys = this.instance.get_keys();
+            it('.getKeys() should return array of keys', function () {
+                var keys = this.instance.getKeys();
 
                 expect(keys instanceof Array).toBe(true);
                 expect(keys.length).toBe(3);
-                expect(keys).toContain('string_key');
-                expect(keys).toContain('boolean_key');
-                expect(keys).toContain('number_key');
+                expect(keys).toContain('stringKey');
+                expect(keys).toContain('booleanKey');
+                expect(keys).toContain('numberKey');
             });
 
             it('.each() should be called on each member', function () {
@@ -321,9 +321,9 @@ describe('Barricade', function () {
                 });
 
                 expect(keys.length).toBe(3);
-                expect(keys).toContain('string_key');
-                expect(keys).toContain('boolean_key');
-                expect(keys).toContain('number_key');
+                expect(keys).toContain('stringKey');
+                expect(keys).toContain('booleanKey');
+                expect(keys).toContain('numberKey');
                 
                 expect(values.length).toBe(3);
                 expect(values).toContain("foo");
@@ -332,10 +332,10 @@ describe('Barricade', function () {
             });
 
             it('.each() parameter 2 can be a comparator', function () {
-                function try_each(obj,
+                function tryEach(obj,
                                   comparator,
-                                  expected_keys,
-                                  expected_values) {
+                                  expectedKeys,
+                                  expectedValues) {
                     var keys = [],
                         values = [];
 
@@ -347,51 +347,51 @@ describe('Barricade', function () {
                         comparator
                     );
 
-                    expect(keys).toEqual(expected_keys);
-                    expect(values).toEqual(expected_values);
+                    expect(keys).toEqual(expectedKeys);
+                    expect(values).toEqual(expectedValues);
                 }
 
                 // sort alphabetically
-                try_each(
+                tryEach(
                     this.instance,
                     function (key1, key2) {
                         return key1.localeCompare(key2);
                     },
-                    ['boolean_key', 'number_key', 'string_key'],
+                    ['booleanKey', 'numberKey', 'stringKey'],
                     [true, 43987, "foo"]
                 );
 
                 // sort reversed alphabetically
-                try_each(
+                tryEach(
                     this.instance,
                     function (key1, key2) {
                         return key2.localeCompare(key1);
                     },
-                    ['string_key', 'number_key', 'boolean_key'],
+                    ['stringKey', 'numberKey', 'booleanKey'],
                     ["foo", 43987, true]
                 );
             });
 
             it('.toJSON() should return JSON blob', function () {
                 expect(this.instance.toJSON()).toEqual({
-                    string_key: "foo",
-                    boolean_key: true,
-                    number_key: 43987
+                    stringKey: "foo",
+                    booleanKey: true,
+                    numberKey: 43987
                 });
             });
 
-            it('.get_primitive_type() should return Object', function () {
-                expect(this.instance.get_primitive_type()).toBe(Object);
+            it('.getPrimitiveType() should return Object', function () {
+                expect(this.instance.getPrimitiveType()).toBe(Object);
             });
 
             xit('should not have any other members', function () {
                 var key;
 
                 delete this.instance.get;
-                delete this.instance.get_keys;
+                delete this.instance.getKeys;
                 delete this.instance.each;
                 delete this.instance.toJSON;
-                delete this.instance.get_primitive_type;
+                delete this.instance.getPrimitiveType;
 
                 for (key in this.instance) {
                     // should never be reached, but is sure to error out
@@ -402,7 +402,7 @@ describe('Barricade', function () {
 
         describe('Instances from formats with wildcard keys', function () {
             beforeEach(function () {
-                save_global_state();
+                saveGlobalState();
 
                 this.namespace = {};
 
@@ -421,7 +421,7 @@ describe('Barricade', function () {
                 });
             });
 
-            ensure_global_object_unpolluted();
+            ensureGlobalObjectUnpolluted();
 
             it('should provide array-like interface', function () {
                 var values = [];
@@ -438,30 +438,30 @@ describe('Barricade', function () {
                 expect(values).toEqual(["abcd", "efgh", "ijkl"]);
             });
 
-            it('element.get_id() should return its id', function () {
-                expect(this.instance.get(0).get_id()).toBe('foo');
-                expect(this.instance.get(1).get_id()).toBe('bar');
-                expect(this.instance.get(2).get_id()).toBe('baz');
+            it('element.getID() should return its id', function () {
+                expect(this.instance.get(0).getID()).toBe('foo');
+                expect(this.instance.get(1).getID()).toBe('bar');
+                expect(this.instance.get(2).getID()).toBe('baz');
             });
 
-            it('element.set_id() should change its id', function () {
-                this.instance.get(0).set_id('foofoo');
-                this.instance.get(1).set_id('barbar');
-                this.instance.get(2).set_id('bazbaz');
+            it('element.setID() should change its id', function () {
+                this.instance.get(0).setID('foofoo');
+                this.instance.get(1).setID('barbar');
+                this.instance.get(2).setID('bazbaz');
 
-                expect(this.instance.get(0).get_id()).toBe('foofoo');
-                expect(this.instance.get(1).get_id()).toBe('barbar');
-                expect(this.instance.get(2).get_id()).toBe('bazbaz');
+                expect(this.instance.get(0).getID()).toBe('foofoo');
+                expect(this.instance.get(1).getID()).toBe('barbar');
+                expect(this.instance.get(2).getID()).toBe('bazbaz');
             });
 
-            it('.get_ids() should return array with ids', function () {
-                expect(this.instance.get_ids()).toEqual(['foo', 'bar', 'baz']);
+            it('.getIDs() should return array with ids', function () {
+                expect(this.instance.getIDs()).toEqual(['foo', 'bar', 'baz']);
             });
 
             it('.push() should add element with JSON and ID', function () {
                 this.instance.push('new value', {id: 'new id'});
 
-                expect(this.instance.get(3).get_id()).toBe('new id');
+                expect(this.instance.get(3).getID()).toBe('new id');
                 expect(this.instance.get(3).get()).toBe('new value');
             });
 
@@ -489,17 +489,17 @@ describe('Barricade', function () {
                     baz2: "uvwx"
                 });
 
-                expect(this.instance2.get(0).get_id()).toBe('foo2');
+                expect(this.instance2.get(0).getID()).toBe('foo2');
                 expect(this.instance2.get(2).get()).toBe('uvwx');
             });
         });
     });
 
     describe('Array format', function () {
-        function try_each(array,
+        function tryEach(array,
                           comparator,
-                          expected_indexes,
-                          expected_values) {
+                          expectedIndexes,
+                          expectedValues) {
             var indexes = [],
                 values = [];
 
@@ -518,12 +518,12 @@ describe('Barricade', function () {
                 });
             }
 
-            expect(indexes).toEqual(expected_indexes);
-            expect(values).toEqual(expected_values);
+            expect(indexes).toEqual(expectedIndexes);
+            expect(values).toEqual(expectedValues);
         }
 
         beforeEach(function () {
-            save_global_state();
+            saveGlobalState();
 
             this.namespace = {};
 
@@ -549,7 +549,7 @@ describe('Barricade', function () {
             this.instance3 = this.namespace.ArrayClass.create();
         });
 
-        ensure_global_object_unpolluted();
+        ensureGlobalObjectUnpolluted();
 
         it('.length() should return number of elements', function () {
             expect(this.instance1.length()).toBe(3);
@@ -599,21 +599,21 @@ describe('Barricade', function () {
             });
 
             this.instance4 = this.namespace.ArrayWithElementClass.create();
-            this.element_instance = this.namespace.ArrayElement.create('x');
-            this.instance4.push(this.element_instance);
-            this.instance4.push(this.element_instance);
+            this.elementInstance = this.namespace.ArrayElement.create('x');
+            this.instance4.push(this.elementInstance);
+            this.instance4.push(this.elementInstance);
 
             expect(this.instance4.length()).toBe(2);
-            expect(this.instance4.get(0)).toBe(this.element_instance);
-            expect(this.instance4.get(1)).toBe(this.element_instance);
+            expect(this.instance4.get(0)).toBe(this.elementInstance);
+            expect(this.instance4.get(1)).toBe(this.elementInstance);
             expect(this.instance4.get(0).get()).toBe('x');
             expect(this.instance4.get(1).get()).toBe('x');
         });
 
         it('.each() should be called on each element', function () {
-            try_each(this.instance1, null, [0, 1, 2], ['a', 'b', 'c']);
+            tryEach(this.instance1, null, [0, 1, 2], ['a', 'b', 'c']);
 
-            try_each(this.instance2,
+            tryEach(this.instance2,
                      null,
                      [0, 1, 2, 3, 4, 5],
                      [
@@ -625,30 +625,30 @@ describe('Barricade', function () {
                          'string element 6',
                      ]);
 
-            try_each(this.instance3, null, [], []);
+            tryEach(this.instance3, null, [], []);
         });
 
         it('.each() parameter 2 can be a comparator', function () {
-            function alpha_compare(val1, val2) {
+            function alphaCompare(val1, val2) {
                 return val1.get().localeCompare(val2.get());
             }
 
-            function alpha_compare_rev(val1, val2) {
+            function alphaCompareRev(val1, val2) {
                 return val2.get().localeCompare(val1.get());
             }
 
-            try_each(this.instance1,
-                     alpha_compare,
+            tryEach(this.instance1,
+                     alphaCompare,
                      [0, 1, 2],
                      ['a', 'b', 'c']);
 
-            try_each(this.instance1,
-                     alpha_compare_rev,
+            tryEach(this.instance1,
+                     alphaCompareRev,
                      [0, 1, 2],
                      ['c', 'b', 'a']);
 
-            try_each(this.instance2,
-                     alpha_compare,
+            tryEach(this.instance2,
+                     alphaCompare,
                      [0, 1, 2, 3, 4, 5],
                      [
                          'string element 1',
@@ -659,8 +659,8 @@ describe('Barricade', function () {
                          'string element 6',
                      ]);
 
-            try_each(this.instance2,
-                     alpha_compare_rev,
+            tryEach(this.instance2,
+                     alphaCompareRev,
                      [0, 1, 2, 3, 4, 5],
                      [
                          'string element 6',
@@ -671,24 +671,24 @@ describe('Barricade', function () {
                          'string element 1',
                      ]);
 
-            try_each(this.instance3, alpha_compare, [], []);
-            try_each(this.instance3, alpha_compare_rev, [], []);
+            tryEach(this.instance3, alphaCompare, [], []);
+            tryEach(this.instance3, alphaCompareRev, [], []);
         });
 
-        it('.to_array() should return native array copy', function () {
+        it('.toArray() should return native array copy', function () {
             var that = this;
 
-            expect(this.instance1.to_array().reduce(function (prev, cur) {
+            expect(this.instance1.toArray().reduce(function (prev, cur) {
                 return prev + cur.get();
             }, '')).toBe('abc');
 
-            expect(this.instance2.to_array()
+            expect(this.instance2.toArray()
                                  .reduce(function (prev, cur, index) {
                 return prev + index;
             }, 0)).toBe(15);
 
             // test lack of initial value (should set prev to element 0)
-            this.instance1.to_array().reduce(function (prev, cur, index) {
+            this.instance1.toArray().reduce(function (prev, cur, index) {
                 if (index === 0) {
                     expect(prev).toBe(that.instance1.get(0));
                 }
@@ -696,7 +696,7 @@ describe('Barricade', function () {
             });
 
             expect(this.instance1.length()).toBe(3);
-            this.instance1.to_array().push('d');
+            this.instance1.toArray().push('d');
             expect(this.instance1.length()).toBe(3);
         });
 
@@ -721,53 +721,53 @@ describe('Barricade', function () {
             this.namespace.FixedKeyClass = Barricade({
                 '@type': Object,
 
-                'string_key_explicit': {
+                'stringKeyExplicit': {
                     '@type': String,
                     '@required': true
                 },
-                'string_key_implicit': {
+                'stringKeyImplicit': {
                     '@type': String
                 },
-                'boolean_key': {
+                'booleanKey': {
                     '@type': Boolean,
                     '@required': false
                 },
-                'number_key': {
+                'numberKey': {
                     '@type': Number,
                     '@required': false
                 }
             });
 
             this.instance = this.namespace.FixedKeyClass.create({
-                'string_key_explicit': "foo",
-                'string_key_implicit': "bar",
-                'boolean_key': true
+                'stringKeyExplicit': "foo",
+                'stringKeyImplicit': "bar",
+                'booleanKey': true
             });
         });
 
-        it('should set .is_required() correctly', function () {
+        it('should set .isRequired() correctly', function () {
             var inst = this.instance;
-            expect(inst.get('string_key_explicit').is_required()).toBe(true);
-            expect(inst.get('string_key_implicit').is_required()).toBe(true);
-            expect(inst.get('boolean_key').is_required()).toBe(false);
-            expect(inst.get('number_key').is_required()).toBe(false);
+            expect(inst.get('stringKeyExplicit').isRequired()).toBe(true);
+            expect(inst.get('stringKeyImplicit').isRequired()).toBe(true);
+            expect(inst.get('booleanKey').isRequired()).toBe(false);
+            expect(inst.get('numberKey').isRequired()).toBe(false);
         });
 
-        it('should set .is_used() correctly', function () {
+        it('should set .isUsed() correctly', function () {
             var inst = this.instance;
-            expect(inst.get('string_key_explicit').is_used()).toBe(true);
-            expect(inst.get('string_key_implicit').is_used()).toBe(true);
-            expect(inst.get('boolean_key').is_used()).toBe(true);
-            expect(inst.get('number_key').is_used()).toBe(false);
+            expect(inst.get('stringKeyExplicit').isUsed()).toBe(true);
+            expect(inst.get('stringKeyImplicit').isUsed()).toBe(true);
+            expect(inst.get('booleanKey').isUsed()).toBe(true);
+            expect(inst.get('numberKey').isUsed()).toBe(false);
         });
     });
 
     describe('Event emitter', function () {
-        function get_callback(name, storage_obj) {
-            storage_obj[name] = 0;
+        function getCallback(name, storageObj) {
+            storageObj[name] = 0;
 
             return function () {
-                storage_obj[name]++;
+                storageObj[name]++;
             };
         }
 
@@ -775,7 +775,7 @@ describe('Barricade', function () {
             var namespace = {},
                 calls = {},
                 instance,
-                change = get_callback('change', calls);
+                change = getCallback('change', calls);
 
             namespace.SimpleString = Barricade({
                 '@type': String
@@ -808,7 +808,7 @@ describe('Barricade', function () {
             });
 
             it('using set()/push()/remove() should emit "change"', function () {
-                this.instance.on('change', get_callback('change', this.calls));
+                this.instance.on('change', getCallback('change', this.calls));
 
                 this.instance.set(0, 'd');
                 expect(this.calls.change).toBe(1);
@@ -821,13 +821,13 @@ describe('Barricade', function () {
             });
 
             it('added elements should have listeners as well', function () {
-                this.instance.on('child_change',
-                                 get_callback('child_change', this.calls));
+                this.instance.on('childChange',
+                                 getCallback('childChange', this.calls));
 
                 this.instance.push('g');
                 this.instance.get(this.instance.length() - 1).set('h');
 
-                expect(this.calls.child_change).toBe(1);
+                expect(this.calls.childChange).toBe(1);
             });
         });
 
@@ -845,7 +845,7 @@ describe('Barricade', function () {
                 });
             });
 
-            it('set_id() emits "change" with "id" as parameter', function () {
+            it('setID() emits "change" with "id" as parameter', function () {
                 var child = this.instance.get(0),
                     calls = 0;
 
@@ -855,8 +855,8 @@ describe('Barricade', function () {
                     }
                 });
 
-                child.set_id('def');
-                child.set_id('ghi');
+                child.setID('def');
+                child.setID('ghi');
 
                 expect(calls).toBe(2);
             });
@@ -884,18 +884,18 @@ describe('Barricade', function () {
             });
 
             it('should emit correct number of calls', function () {
-                var child_change = get_callback('child_change', this.calls);
+                var childChange = getCallback('childChange', this.calls);
 
                 // Attach listeners
-                this.instance.on('child_change', child_change);
-                this.instance.get('a').on('child_change', child_change);
-                this.instance.get('a').get('aa').on('child_change',
-                                                    child_change);
+                this.instance.on('childChange', childChange);
+                this.instance.get('a').on('childChange', childChange);
+                this.instance.get('a').get('aa').on('childChange',
+                                                    childChange);
 
                 // Trigger listeners by changing value
                 this.instance.get('a').get('aa').get('aaa').set('abc');
 
-                expect(this.calls.child_change).toBe(3);
+                expect(this.calls.childChange).toBe(3);
             });
         });
     });
@@ -904,7 +904,7 @@ describe('Barricade', function () {
         beforeEach(function () {
             var self = this;
             this.namespace = {};
-            this.num_calls = 0;
+            this.numCalls = 0;
 
             this.namespace.IsReferredTo = Barricade({'@type': Number});
 
@@ -915,9 +915,9 @@ describe('Barricade', function () {
                     needs: function () {
                         return self.namespace.Parent;
                     },
-                    resolver: function (json, parent_obj) {
-                        self.num_calls++;
-                        return parent_obj.get('b');
+                    resolver: function (json, parentObj) {
+                        self.numCalls++;
+                        return parentObj.get('b');
                     }
                 }
             });
@@ -942,7 +942,7 @@ describe('Barricade', function () {
                                     return self.namespace.Grandparent;
                                 },
                                 resolver: function (json, grandparent) {
-                                    return grandparent.get('referred_to');
+                                    return grandparent.get('referredTo');
                                 }
                             }
                         }
@@ -953,8 +953,8 @@ describe('Barricade', function () {
             this.namespace.Grandparent = Barricade({
                 '@type': Object,
 
-                'referred_to': {'@class': this.namespace.IsReferredTo},
-                'ref_child': {
+                'referredTo': {'@class': this.namespace.IsReferredTo},
+                'refChild': {
                     '@type': Object,
                     '@ref': {
                         to: this.namespace.Parent2,
@@ -972,14 +972,14 @@ describe('Barricade', function () {
         it('should resolve references correctly', function () {
             var instance = this.namespace.Parent.create({'a': "abc", 'b': 5});
 
-            expect(this.num_calls).toBe(1);
+            expect(this.numCalls).toBe(1);
             expect(instance.get('a')).toBe(instance.get('b'));
         });
 
         it('should resolve nested references correctly', function () {
             var instance = this.namespace.Grandparent.create({
-                    'referred_to': 9,
-                    'ref_child': {
+                    'referredTo': 9,
+                    'refChild': {
                         'a': {
                             'b': {
                                 'c': 3
@@ -988,8 +988,8 @@ describe('Barricade', function () {
                     }
                 });
 
-            expect(instance.get('ref_child').get('a').get('b').get('c').get())
-                .toBe(instance.get('referred_to').get());
+            expect(instance.get('refChild').get('a').get('b').get('c').get())
+                .toBe(instance.get('referredTo').get());
         });
     });
 

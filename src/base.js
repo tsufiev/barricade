@@ -1,7 +1,7 @@
     barricade.base = (function () {
         var base = {};
 
-        function for_in_keys(obj) {
+        function forInKeys(obj) {
             var key,
                 keys = [];
 
@@ -12,13 +12,13 @@
             return keys;
         }
 
-        function is_plain_object(obj) {
-            return barricade.get_type(obj) === Object &&
+        function isPlainObject(obj) {
+            return barricade.getType(obj) === Object &&
                 Object.getPrototypeOf(Object.getPrototypeOf(obj)) === null;
         }
 
         function extend(extension) {
-            function add_property(object, prop) {
+            function addProperty(object, prop) {
                 return Object.defineProperty(object, prop, {
                     enumerable: true,
                     writable: true,
@@ -28,14 +28,14 @@
             }
 
             // add properties to extended object
-            return Object.keys(extension).reduce(add_property,
+            return Object.keys(extension).reduce(addProperty,
                                                  Object.create(this));
         }
 
-        function deep_clone(object) {
-            if (is_plain_object(object)) {
-                return for_in_keys(object).reduce(function (clone, key) {
-                    clone[key] = deep_clone(object[key]);
+        function deepClone(object) {
+            if (isPlainObject(object)) {
+                return forInKeys(object).reduce(function (clone, key) {
+                    clone[key] = deepClone(object[key]);
                     return clone;
                 }, {});
             }
@@ -43,13 +43,13 @@
         }
 
         function merge(target, source) {
-            for_in_keys(source).forEach(function (key) {
+            forInKeys(source).forEach(function (key) {
                 if (target.hasOwnProperty(key) &&
-                        is_plain_object(target[key]) &&
-                        is_plain_object(source[key])) {
+                        isPlainObject(target[key]) &&
+                        isPlainObject(source[key])) {
                     merge(target[key], source[key]);
                 } else {
-                    target[key] = deep_clone(source[key]);
+                    target[key] = deepClone(source[key]);
                 }
             });
         }
@@ -60,7 +60,7 @@
             value: function (extension, schema) {
                 if (schema) {
                     extension._schema = '_schema' in this ?
-                                            deep_clone(this._schema) : {};
+                                            deepClone(this._schema) : {};
                     merge(extension._schema, schema);
                 }
                 
@@ -74,7 +74,7 @@
                 var _instanceof = this.instanceof,
                     subject = this;
 
-                function has_mixin(obj, mixin) {
+                function hasMixin(obj, mixin) {
                     return obj.hasOwnProperty('_parents') &&
                         obj._parents.some(function (_parent) {
                             return _instanceof.call(_parent, mixin);
@@ -83,7 +83,7 @@
 
                 do {
                     if (subject === proto ||
-                            has_mixin(subject, proto)) {
+                            hasMixin(subject, proto)) {
                         return true;
                     }
                     subject = Object.getPrototypeOf(subject);
@@ -103,16 +103,16 @@
                     parameters = {};
                 }
 
-                if (schema.hasOwnProperty('@input_massager')) {
-                    json = schema['@input_massager'](json);
+                if (schema.hasOwnProperty('@inputMassager')) {
+                    json = schema['@inputMassager'](json);
                 }
 
-                if (barricade.get_type(json) !== type) {
+                if (barricade.getType(json) !== type) {
                     if (json) {
-                        log_error("Type mismatch (json, schema)");
-                        log_val(json, schema);
+                        logError("Type mismatch (json, schema)");
+                        logVal(json, schema);
                     } else {
-                        parameters.is_used = false;
+                        parameters.isUsed = false;
                     }
 
                     // Replace bad type (does not change original)
@@ -126,8 +126,8 @@
                     self.toJSON = schema['@toJSON'];
                 }
 
-                event_emitter.call(self);
-                barricade.omittable.call(self, parameters.is_used !== false);
+                eventEmitter.call(self);
+                barricade.omittable.call(self, parameters.isUsed !== false);
                 barricade.deferrable.call(self, schema);
 
                 if (parameters.hasOwnProperty('id')) {
@@ -139,19 +139,19 @@
             _sift: function () {
                 throw new Error("sift() must be overridden in subclass");
             },
-            _safe_instanceof: function (instance, class_) {
+            _safeInstanceof: function (instance, class_) {
                 return typeof instance === 'object' &&
                     ('instanceof' in instance) &&
                     instance.instanceof(class_);
             },
-            get_primitive_type: function () {
+            getPrimitiveType: function () {
                 return this._schema['@type'];
             },
-            is_required: function () {
+            isRequired: function () {
                 return this._schema['@required'] !== false;
             },
-            is_empty: function () {
-                throw new Error('Subclass should override is_empty()');
+            isEmpty: function () {
+                throw new Error('Subclass should override isEmpty()');
             }
         });
     }());

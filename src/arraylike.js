@@ -1,77 +1,77 @@
     barricade.arraylike = barricade.container.extend({
         create: function (json, parameters) {
-            if (!this.hasOwnProperty('_element_class')) {
-                Object.defineProperty(this, '_element_class', {
+            if (!this.hasOwnProperty('_elementClass')) {
+                Object.defineProperty(this, '_elementClass', {
                     enumerable: false,
                     writable: true,
-                    value: this._get_key_class(this._el_symbol)
+                    value: this._getKeyClass(this._elSymbol)
                 });
             }
 
             return barricade.container.create.call(this, json, parameters);
         },
-        _el_symbol: '*',
+        _elSymbol: '*',
         _sift: function (json, parameters) {
             return json.map(function (el) {
-                return this._key_class_create(this._el_symbol,
-                                              this._element_class, el);
+                return this._keyClassCreate(this._elSymbol,
+                                              this._elementClass, el);
             }, this);
         }, 
         get: function (index) {
             return this._data[index];
         },
-        each: function (function_in, comparator_in) {
+        each: function (functionIn, comparatorIn) {
             var arr = this._data.slice();
 
-            if (comparator_in) {
-                arr.sort(comparator_in);
+            if (comparatorIn) {
+                arr.sort(comparatorIn);
             }
 
             arr.forEach(function (value, index) {
-                function_in(index, value);
+                functionIn(index, value);
             });
         },
-        to_array: function () {
+        toArray: function () {
             return this._data.slice(); // Shallow copy to prevent mutation
         },
-        _do_set: function (index, new_val, new_parameters) {
-            var old_val = this._data[index];
+        _doSet: function (index, newVal, newParameters) {
+            var oldVal = this._data[index];
 
-            if (this._is_correct_type(new_val, this._element_class)) {
-                this._data[index] = new_val;
+            if (this._isCorrectType(newVal, this._elementClass)) {
+                this._data[index] = newVal;
             } else {
-                this._data[index] = this._key_class_create(
-                                  this._el_symbol, this._element_class,
-                                  new_val, new_parameters);
+                this._data[index] = this._keyClassCreate(
+                                  this._elSymbol, this._elementClass,
+                                  newVal, newParameters);
             }
 
-            this.emit('change', 'set', index, this._data[index], old_val);
+            this.emit('change', 'set', index, this._data[index], oldVal);
         },
         length: function () {
             return this._data.length;
         },
-        is_empty: function () {
+        isEmpty: function () {
             return this._data.length === 0;
         },
-        toJSON: function (ignore_unused) {
+        toJSON: function (ignoreUnused) {
             return this._data.map(function (el) {
-                return el.toJSON(ignore_unused);
+                return el.toJSON(ignoreUnused);
             });
         },
-        push: function (new_value, new_parameters) {
-            if (this._is_correct_type(new_value, this._element_class)) {
-                this._data.push(new_value);
+        push: function (newValue, newParameters) {
+            if (this._isCorrectType(newValue, this._elementClass)) {
+                this._data.push(newValue);
             } else {
-                this._data.push(this._key_class_create(
-                              this._el_symbol, this._element_class,
-                              new_value, new_parameters));
+                this._data.push(this._keyClassCreate(
+                              this._elSymbol, this._elementClass,
+                              newValue, newParameters));
             }
 
-            this.emit('_added_element', this._data.length - 1);
+            this.emit('_addedElement', this._data.length - 1);
             this.emit('change', 'add', this._data.length - 1);
         },
         remove: function (index) {
-            this._data[index].emit('remove_from', this);
+            this._data[index].emit('removeFrom', this);
             this._data.splice(index, 1);
             this.emit('change', 'remove', index);
         }

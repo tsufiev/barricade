@@ -1,12 +1,12 @@
-    barricade.immutable_object = barricade.container.extend({
+    barricade.immutableObject = barricade.container.extend({
         create: function (json, parameters) {
             var self = this;
-            if (!this.hasOwnProperty('_key_classes')) {
-                Object.defineProperty(this, '_key_classes', {
+            if (!this.hasOwnProperty('_keyClasses')) {
+                Object.defineProperty(this, '_keyClasses', {
                     enumerable: false,
                     writable: true,
-                    value: this.get_keys().reduce(function (classes, key) {
-                            classes[key] = self._get_key_class(key);
+                    value: this.getKeys().reduce(function (classes, key) {
+                            classes[key] = self._getKeyClass(key);
                             return classes;
                         }, {})
                 });
@@ -16,59 +16,59 @@
         },
         _sift: function (json, parameters) {
             var self = this;
-            return this.get_keys().reduce(function (obj_out, key) {
-                obj_out[key] = self._key_class_create(
-                                   key, self._key_classes[key], json[key]);
-                return obj_out;
+            return this.getKeys().reduce(function (objOut, key) {
+                objOut[key] = self._keyClassCreate(
+                                   key, self._keyClasses[key], json[key]);
+                return objOut;
             }, {});
         },
         get: function (key) {
             return this._data[key];
         },
-        _do_set: function (key, new_value, new_parameters) {
-            var old_val = this._data[key];
+        _doSet: function (key, newValue, newParameters) {
+            var oldVal = this._data[key];
 
             if (this._schema.hasOwnProperty(key)) {
-                if (this._is_correct_type(new_value,
-                                          this._key_classes[key])) {
-                    this._data[key] = new_value;
+                if (this._isCorrectType(newValue,
+                                          this._keyClasses[key])) {
+                    this._data[key] = newValue;
                 } else {
-                    this._data[key] = this._key_class_create(
-                                          key, this._key_classes[key],
-                                          new_value, new_parameters);
+                    this._data[key] = this._keyClassCreate(
+                                          key, this._keyClasses[key],
+                                          newValue, newParameters);
                 }
 
-                this.emit('change', 'set', key, this._data[key], old_val);
+                this.emit('change', 'set', key, this._data[key], oldVal);
             } else {
                 console.error('object does not have key (key, schema)');
                 console.log(key, this._schema);
             }
         },
-        each: function (function_in, comparator_in) {
+        each: function (functionIn, comparatorIn) {
             var self = this,
-                keys = this.get_keys();
+                keys = this.getKeys();
 
-            if (comparator_in) {
-                keys.sort(comparator_in);
+            if (comparatorIn) {
+                keys.sort(comparatorIn);
             }
 
             keys.forEach(function (key) {
-                function_in(key, self._data[key]);
+                functionIn(key, self._data[key]);
             });
         },
-        is_empty: function () {
+        isEmpty: function () {
             return Object.keys(this._data).length === 0;
         },
-        toJSON: function (ignore_unused) {
+        toJSON: function (ignoreUnused) {
             var data = this._data;
-            return this.get_keys().reduce(function (json_out, key) {
-                if (ignore_unused !== true || data[key].is_used()) {
-                    json_out[key] = data[key].toJSON(ignore_unused);
+            return this.getKeys().reduce(function (jsonOut, key) {
+                if (ignoreUnused !== true || data[key].isUsed()) {
+                    jsonOut[key] = data[key].toJSON(ignoreUnused);
                 }
-                return json_out;
+                return jsonOut;
             }, {});
         },
-        get_keys: function () {
+        getKeys: function () {
             return Object.keys(this._schema).filter(function (key) {
                 return key.charAt(0) !== '@';
             });

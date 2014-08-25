@@ -1,47 +1,47 @@
-    barricade.mutable_object = barricade.arraylike.extend({
-        _el_symbol: '?',
+    barricade.mutableObject = barricade.arraylike.extend({
+        _elSymbol: '?',
         _sift: function (json, parameters) {
             return Object.keys(json).map(function (key) {
-                return this._key_class_create(
-                                   this._el_symbol, this._element_class,
+                return this._keyClassCreate(
+                                   this._elSymbol, this._elementClass,
                                    json[key], {id: key});
             }, this);
         },
-        get_ids: function () {
-            return this.to_array().map(function (value) {
-                return value.get_id();
+        getIDs: function () {
+            return this.toArray().map(function (value) {
+                return value.getID();
             });
         },
-        get_by_id: function (id) {
-            var pos = this.to_array().map(function (value) {
-                    return value.get_id();
+        getByID: function (id) {
+            var pos = this.toArray().map(function (value) {
+                    return value.getID();
                 }).indexOf(id);
             return this.get(pos);
         },
         contains: function (element) {
-            return this.to_array().some(function (value) {
+            return this.toArray().some(function (value) {
                 return element === value;
             });
         },
-        toJSON: function (ignore_unused) {
-            return this.to_array().reduce(function (json_out, element) {
-                if (json_out.hasOwnProperty(element.get_id())) {
-                    log_error("ID encountered multiple times: " +
-                                  element.get_id());
+        toJSON: function (ignoreUnused) {
+            return this.toArray().reduce(function (jsonOut, element) {
+                if (jsonOut.hasOwnProperty(element.getID())) {
+                    logError("ID encountered multiple times: " +
+                                  element.getID());
                 } else {
-                    json_out[element.get_id()] = 
-                        element.toJSON(ignore_unused);
+                    jsonOut[element.getID()] = 
+                        element.toJSON(ignoreUnused);
                 }
-                return json_out;
+                return jsonOut;
             }, {});
         },
-        push: function (new_json, new_parameters) {
-            if (barricade.get_type(new_parameters) !== Object ||
-                    !new_parameters.hasOwnProperty('id')) {
-                log_error('ID should be passed in ' + 
+        push: function (newJson, newParameters) {
+            if (barricade.getType(newParameters) !== Object ||
+                    !newParameters.hasOwnProperty('id')) {
+                logError('ID should be passed in ' + 
                           'with parameters object');
             } else {
-                barricade.array.push.call(this, new_json, new_parameters);
+                barricade.array.push.call(this, newJson, newParameters);
             }
         },
     });

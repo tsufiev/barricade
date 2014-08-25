@@ -24,28 +24,28 @@ Barricade = (function () {
     };
 
     barricade.identifiable = blueprint.create(function (id) {
-        this.get_id = function () {
+        this.getID = function () {
             return id;
         };
 
-        this.set_id = function (new_id) {
-            id = new_id;
+        this.setID = function (newID) {
+            id = newID;
             this.emit('change', 'id');
         };
     });
 
-    barricade.omittable = blueprint.create(function (is_used) {
-        this.is_used = function () {
+    barricade.omittable = blueprint.create(function (isUsed) {
+        this.isUsed = function () {
             // If required, it has to be used.
-            return this.is_required() || is_used;
+            return this.isRequired() || isUsed;
         };
 
-        this.set_is_used = function (new_used_value) {
-            is_used = !!new_used_value;
+        this.setIsUsed = function (newUsedValue) {
+            isUsed = !!newUsedValue;
         };
 
         this.on('change', function () {
-            is_used = !this.is_empty();
+            isUsed = !this.isEmpty();
         });
     });
 
@@ -53,23 +53,23 @@ Barricade = (function () {
         var self = this,
             deferred;
 
-        function resolver(needed_value) {
-            var ref = schema['@ref'].resolver(self, needed_value);
+        function resolver(neededValue) {
+            var ref = schema['@ref'].resolver(self, neededValue);
             if (ref === undefined) {
-                log_error('Could not resolve "' + 
+                logError('Could not resolve "' + 
                           JSON.stringify(self.toJSON()) + '"');
             }
             return ref;
         }
 
-        function has_dependency() {
+        function hasDependency() {
             return schema.hasOwnProperty('@ref');
         }
 
-        this.has_dependency = has_dependency;
+        this.hasDependency = hasDependency;
 
-        if (has_dependency()) {
-            this.get_deferred = function () {
+        if (hasDependency()) {
+            this.getDeferred = function () {
                 return deferred;
             };
 
@@ -78,40 +78,40 @@ Barricade = (function () {
         }
     });
 
-    var event_emitter = blueprint.create(function () {
+    var eventEmitter = blueprint.create(function () {
         var events = {};
 
-        function has_event(event_name) {
-            return events.hasOwnProperty(event_name);
+        function hasEvent(eventName) {
+            return events.hasOwnProperty(eventName);
         }
 
         // Adds listener for event
-        this.on = function (event_name, callback) {
-            if (!has_event(event_name)) {
-                events[event_name] = [];
+        this.on = function (eventName, callback) {
+            if (!hasEvent(eventName)) {
+                events[eventName] = [];
             }
 
-            events[event_name].push(callback);
+            events[eventName].push(callback);
         };
 
         // Removes listener for event
-        this.off = function (event_name, callback) {
+        this.off = function (eventName, callback) {
             var index;
 
-            if (has_event(event_name)) {
-                index = events[event_name].indexOf(callback);
+            if (hasEvent(eventName)) {
+                index = events[eventName].indexOf(callback);
 
                 if (index > -1) {
-                    events[event_name].splice(index, 1);
+                    events[eventName].splice(index, 1);
                 }
             }
         };
 
-        this.emit = function (event_name) {
+        this.emit = function (eventName) {
             var args = arguments; // Must come from correct scope
-            if (events.hasOwnProperty(event_name)) {
-                events[event_name].forEach(function (callback) {
-                    // Call with emitter as context and pass all but event_name
+            if (events.hasOwnProperty(eventName)) {
+                events[eventName].forEach(function (callback) {
+                    // Call with emitter as context and pass all but eventName
                     callback.apply(this, Array.prototype.slice.call(args, 1));
                 }, this);
             }
@@ -119,27 +119,27 @@ Barricade = (function () {
     });
 
     barricade.deferred = {
-        create: function (class_getter, on_resolve) {
+        create: function (classGetter, onResolve) {
             var self = Object.create(this),
                 callbacks = [],
-                is_resolved = false;
+                isResolved = false;
 
-            self.get_class = function () {
-                return class_getter();
+            self.getClass = function () {
+                return classGetter();
             };
 
             self.resolve = function (obj) {
                 var ref;
 
-                if (is_resolved) {
+                if (isResolved) {
                     throw new Error('Deferred already resolved');
                 }
 
-                ref = on_resolve(obj);
-                is_resolved = true;
+                ref = onResolve(obj);
+                isResolved = true;
 
                 if (ref === undefined) {
-                    log_error('Could not resolve reference');
+                    logError('Could not resolve reference');
                 } else {
                     callbacks.forEach(function (callback) {
                         callback(ref);
@@ -149,11 +149,11 @@ Barricade = (function () {
                 return ref;
             };
 
-            self.is_resolved = function () {
-                return is_resolved;
+            self.isResolved = function () {
+                return isResolved;
             };
 
-            self.add_callback = function (callback) {
+            self.addCallback = function (callback) {
                 callbacks.push(callback);
             };
             
@@ -164,7 +164,7 @@ Barricade = (function () {
     barricade.base = (function () {
         var base = {};
 
-        function for_in_keys(obj) {
+        function forInKeys(obj) {
             var key,
                 keys = [];
 
@@ -175,13 +175,13 @@ Barricade = (function () {
             return keys;
         }
 
-        function is_plain_object(obj) {
-            return barricade.get_type(obj) === Object &&
+        function isPlainObject(obj) {
+            return barricade.getType(obj) === Object &&
                 Object.getPrototypeOf(Object.getPrototypeOf(obj)) === null;
         }
 
         function extend(extension) {
-            function add_property(object, prop) {
+            function addProperty(object, prop) {
                 return Object.defineProperty(object, prop, {
                     enumerable: true,
                     writable: true,
@@ -191,14 +191,14 @@ Barricade = (function () {
             }
 
             // add properties to extended object
-            return Object.keys(extension).reduce(add_property,
+            return Object.keys(extension).reduce(addProperty,
                                                  Object.create(this));
         }
 
-        function deep_clone(object) {
-            if (is_plain_object(object)) {
-                return for_in_keys(object).reduce(function (clone, key) {
-                    clone[key] = deep_clone(object[key]);
+        function deepClone(object) {
+            if (isPlainObject(object)) {
+                return forInKeys(object).reduce(function (clone, key) {
+                    clone[key] = deepClone(object[key]);
                     return clone;
                 }, {});
             }
@@ -206,13 +206,13 @@ Barricade = (function () {
         }
 
         function merge(target, source) {
-            for_in_keys(source).forEach(function (key) {
+            forInKeys(source).forEach(function (key) {
                 if (target.hasOwnProperty(key) &&
-                        is_plain_object(target[key]) &&
-                        is_plain_object(source[key])) {
+                        isPlainObject(target[key]) &&
+                        isPlainObject(source[key])) {
                     merge(target[key], source[key]);
                 } else {
-                    target[key] = deep_clone(source[key]);
+                    target[key] = deepClone(source[key]);
                 }
             });
         }
@@ -223,7 +223,7 @@ Barricade = (function () {
             value: function (extension, schema) {
                 if (schema) {
                     extension._schema = '_schema' in this ?
-                                            deep_clone(this._schema) : {};
+                                            deepClone(this._schema) : {};
                     merge(extension._schema, schema);
                 }
                 
@@ -237,7 +237,7 @@ Barricade = (function () {
                 var _instanceof = this.instanceof,
                     subject = this;
 
-                function has_mixin(obj, mixin) {
+                function hasMixin(obj, mixin) {
                     return obj.hasOwnProperty('_parents') &&
                         obj._parents.some(function (_parent) {
                             return _instanceof.call(_parent, mixin);
@@ -246,7 +246,7 @@ Barricade = (function () {
 
                 do {
                     if (subject === proto ||
-                            has_mixin(subject, proto)) {
+                            hasMixin(subject, proto)) {
                         return true;
                     }
                     subject = Object.getPrototypeOf(subject);
@@ -266,16 +266,16 @@ Barricade = (function () {
                     parameters = {};
                 }
 
-                if (schema.hasOwnProperty('@input_massager')) {
-                    json = schema['@input_massager'](json);
+                if (schema.hasOwnProperty('@inputMassager')) {
+                    json = schema['@inputMassager'](json);
                 }
 
-                if (barricade.get_type(json) !== type) {
+                if (barricade.getType(json) !== type) {
                     if (json) {
-                        log_error("Type mismatch (json, schema)");
-                        log_val(json, schema);
+                        logError("Type mismatch (json, schema)");
+                        logVal(json, schema);
                     } else {
-                        parameters.is_used = false;
+                        parameters.isUsed = false;
                     }
 
                     // Replace bad type (does not change original)
@@ -289,8 +289,8 @@ Barricade = (function () {
                     self.toJSON = schema['@toJSON'];
                 }
 
-                event_emitter.call(self);
-                barricade.omittable.call(self, parameters.is_used !== false);
+                eventEmitter.call(self);
+                barricade.omittable.call(self, parameters.isUsed !== false);
                 barricade.deferrable.call(self, schema);
 
                 if (parameters.hasOwnProperty('id')) {
@@ -302,19 +302,19 @@ Barricade = (function () {
             _sift: function () {
                 throw new Error("sift() must be overridden in subclass");
             },
-            _safe_instanceof: function (instance, class_) {
+            _safeInstanceof: function (instance, class_) {
                 return typeof instance === 'object' &&
                     ('instanceof' in instance) &&
                     instance.instanceof(class_);
             },
-            get_primitive_type: function () {
+            getPrimitiveType: function () {
                 return this._schema['@type'];
             },
-            is_required: function () {
+            isRequired: function () {
                 return this._schema['@required'] !== false;
             },
-            is_empty: function () {
-                throw new Error('Subclass should override is_empty()');
+            isEmpty: function () {
+                throw new Error('Subclass should override isEmpty()');
             }
         });
     }());
@@ -322,230 +322,230 @@ Barricade = (function () {
     barricade.container = barricade.base.extend({
         create: function (json, parameters) {
             var self = barricade.base.create.call(this, json, parameters),
-                all_deferred = [];
+                allDeferred = [];
 
-            function attach_listeners(key) {
-                self._attach_listeners(key);
+            function attachListeners(key) {
+                self._attachListeners(key);
             }
 
-            function get_on_resolve(key) {
-                return function (resolved_value) {
-                    self.set(key, resolved_value);
+            function getOnResolve(key) {
+                return function (resolvedValue) {
+                    self.set(key, resolvedValue);
                 
-                    if (resolved_value.has_dependency()) {
-                        all_deferred.push(resolved_value.get_deferred());
+                    if (resolvedValue.hasDependency()) {
+                        allDeferred.push(resolvedValue.getDeferred());
                     }
 
-                    if ('get_all_deferred' in resolved_value) {
-                        all_deferred = all_deferred.concat(
-                            resolved_value.get_all_deferred());
+                    if ('getAllDeferred' in resolvedValue) {
+                        allDeferred = allDeferred.concat(
+                            resolvedValue.getAllDeferred());
                     }
                 };
             }
 
-            function attach_deferred_callback(key, value) {
-                if (value.has_dependency()) {
-                    value.get_deferred().add_callback(get_on_resolve(key));
+            function attachDeferredCallback(key, value) {
+                if (value.hasDependency()) {
+                    value.getDeferred().addCallback(getOnResolve(key));
                 }
             }
 
-            function deferred_class_matches(deferred) {
-                return self.instanceof(deferred.get_class());
+            function deferredClassMatches(deferred) {
+                return self.instanceof(deferred.getClass());
             }
 
-            function add_deferred_to_list(obj) {
-                if (obj.has_dependency()) {
-                    all_deferred.push(obj.get_deferred());
+            function addDeferredToList(obj) {
+                if (obj.hasDependency()) {
+                    allDeferred.push(obj.getDeferred());
                 }
 
-                if ('get_all_deferred' in obj) {
-                    all_deferred = all_deferred.concat(
-                                       obj.get_all_deferred());
+                if ('getAllDeferred' in obj) {
+                    allDeferred = allDeferred.concat(
+                                       obj.getAllDeferred());
                 }
             }
 
-            function resolve_deferreds() {
-                var cur_deferred,
-                    unresolved_deferreds = [];
+            function resolveDeferreds() {
+                var curDeferred,
+                    unresolvedDeferreds = [];
 
-                // New deferreds can be added to all_deferred as others are
+                // New deferreds can be added to allDeferred as others are
                 // resolved. Iterating this way is safe regardless of how 
                 // new elements are added.
-                while (all_deferred.length > 0) {
-                    cur_deferred = all_deferred.shift();
+                while (allDeferred.length > 0) {
+                    curDeferred = allDeferred.shift();
 
-                    if (!cur_deferred.is_resolved()) {
-                        if (deferred_class_matches(cur_deferred)) {
-                            cur_deferred.add_callback(add_deferred_to_list);
-                            cur_deferred.resolve(self);
+                    if (!curDeferred.isResolved()) {
+                        if (deferredClassMatches(curDeferred)) {
+                            curDeferred.addCallback(addDeferredToList);
+                            curDeferred.resolve(self);
                         } else {
-                            unresolved_deferreds.push(cur_deferred);
+                            unresolvedDeferreds.push(curDeferred);
                         }
                     }
                 }
 
-                all_deferred = unresolved_deferreds;
+                allDeferred = unresolvedDeferreds;
             }
 
-            self.on('_added_element', attach_listeners);
-            self.each(attach_listeners);
+            self.on('_addedElement', attachListeners);
+            self.each(attachListeners);
 
             self.each(function (key, value) {
-                attach_deferred_callback(key, value);
+                attachDeferredCallback(key, value);
             });
 
-            if (self.has_dependency()) {
-                all_deferred.push(self.get_deferred());
+            if (self.hasDependency()) {
+                allDeferred.push(self.getDeferred());
             }
 
             self.each(function (key, value) {
-                add_deferred_to_list(value);
+                addDeferredToList(value);
             });
 
-            resolve_deferreds.call(self);
+            resolveDeferreds.call(self);
 
-            self.get_all_deferred = function () {
-                return all_deferred;
+            self.getAllDeferred = function () {
+                return allDeferred;
             };
 
             return self;
         },
-        _attach_listeners: function (key) {
+        _attachListeners: function (key) {
             var self = this,
                 element = this.get(key);
 
-            function on_child_change(child) {
-                self.emit('child_change', child);
+            function onChildChange(child) {
+                self.emit('childChange', child);
             }
 
-            function on_direct_child_change() {
-                on_child_change(this); // 'this' is set to callee, not typo
+            function onDirectChildChange() {
+                onChildChange(this); // 'this' is set to callee, not typo
             }
 
-            function on_replace(new_value) {
-                self.set(key, new_value);
+            function onReplace(newValue) {
+                self.set(key, newValue);
             }
 
-            element.on('child_change', on_child_change);
-            element.on('change', on_direct_child_change);
-            element.on('replace', on_replace);
+            element.on('childChange', onChildChange);
+            element.on('change', onDirectChildChange);
+            element.on('replace', onReplace);
 
-            element.on('remove_from', function (container) {
+            element.on('removeFrom', function (container) {
                 if (container === self) {
-                    element.off('child_change', on_child_change);
-                    element.off('change', on_direct_child_change);
-                    element.off('replace', on_replace);
+                    element.off('childChange', onChildChange);
+                    element.off('change', onDirectChildChange);
+                    element.off('replace', onReplace);
                 }
             });
         },
         set: function (key, value) {
-            this.get(key).emit('remove_from', this);
-            this._do_set(key, value);
-            this._attach_listeners(key);
+            this.get(key).emit('removeFrom', this);
+            this._doSet(key, value);
+            this._attachListeners(key);
         },
-        _get_key_class: function (key) {
+        _getKeyClass: function (key) {
             return this._schema[key].hasOwnProperty('@class')
                 ? this._schema[key]['@class']
                 : barricade.poly(this._schema[key]);
         },
-        _key_class_create: function (key, key_class, json, parameters) {
+        _keyClassCreate: function (key, keyClass, json, parameters) {
             return this._schema[key].hasOwnProperty('@factory')
                 ? this._schema[key]['@factory'](json, parameters)
-                : key_class.create(json, parameters);
+                : keyClass.create(json, parameters);
         },
-        _is_correct_type: function (instance, class_) {
+        _isCorrectType: function (instance, class_) {
             var self = this;
 
-            function is_ref_to() {
+            function isRefTo() {
                 if (typeof class_._schema['@ref'].to === 'function') {
-                    return self._safe_instanceof(instance,
+                    return self._safeInstanceof(instance,
                                                  class_._schema['@ref'].to());
                 } else if (typeof class_._schema['@ref'].to === 'object') {
-                    return self._safe_instanceof(instance,
+                    return self._safeInstanceof(instance,
                                                  class_._schema['@ref'].to);
                 }
                 throw new Error('Ref.to was ' + class_._schema['@ref'].to);
             }
 
-            return this._safe_instanceof(instance, class_) ||
-                (class_._schema.hasOwnProperty('@ref') && is_ref_to());
+            return this._safeInstanceof(instance, class_) ||
+                (class_._schema.hasOwnProperty('@ref') && isRefTo());
         }
     });
 
     barricade.arraylike = barricade.container.extend({
         create: function (json, parameters) {
-            if (!this.hasOwnProperty('_element_class')) {
-                Object.defineProperty(this, '_element_class', {
+            if (!this.hasOwnProperty('_elementClass')) {
+                Object.defineProperty(this, '_elementClass', {
                     enumerable: false,
                     writable: true,
-                    value: this._get_key_class(this._el_symbol)
+                    value: this._getKeyClass(this._elSymbol)
                 });
             }
 
             return barricade.container.create.call(this, json, parameters);
         },
-        _el_symbol: '*',
+        _elSymbol: '*',
         _sift: function (json, parameters) {
             return json.map(function (el) {
-                return this._key_class_create(this._el_symbol,
-                                              this._element_class, el);
+                return this._keyClassCreate(this._elSymbol,
+                                              this._elementClass, el);
             }, this);
         }, 
         get: function (index) {
             return this._data[index];
         },
-        each: function (function_in, comparator_in) {
+        each: function (functionIn, comparatorIn) {
             var arr = this._data.slice();
 
-            if (comparator_in) {
-                arr.sort(comparator_in);
+            if (comparatorIn) {
+                arr.sort(comparatorIn);
             }
 
             arr.forEach(function (value, index) {
-                function_in(index, value);
+                functionIn(index, value);
             });
         },
-        to_array: function () {
+        toArray: function () {
             return this._data.slice(); // Shallow copy to prevent mutation
         },
-        _do_set: function (index, new_val, new_parameters) {
-            var old_val = this._data[index];
+        _doSet: function (index, newVal, newParameters) {
+            var oldVal = this._data[index];
 
-            if (this._is_correct_type(new_val, this._element_class)) {
-                this._data[index] = new_val;
+            if (this._isCorrectType(newVal, this._elementClass)) {
+                this._data[index] = newVal;
             } else {
-                this._data[index] = this._key_class_create(
-                                  this._el_symbol, this._element_class,
-                                  new_val, new_parameters);
+                this._data[index] = this._keyClassCreate(
+                                  this._elSymbol, this._elementClass,
+                                  newVal, newParameters);
             }
 
-            this.emit('change', 'set', index, this._data[index], old_val);
+            this.emit('change', 'set', index, this._data[index], oldVal);
         },
         length: function () {
             return this._data.length;
         },
-        is_empty: function () {
+        isEmpty: function () {
             return this._data.length === 0;
         },
-        toJSON: function (ignore_unused) {
+        toJSON: function (ignoreUnused) {
             return this._data.map(function (el) {
-                return el.toJSON(ignore_unused);
+                return el.toJSON(ignoreUnused);
             });
         },
-        push: function (new_value, new_parameters) {
-            if (this._is_correct_type(new_value, this._element_class)) {
-                this._data.push(new_value);
+        push: function (newValue, newParameters) {
+            if (this._isCorrectType(newValue, this._elementClass)) {
+                this._data.push(newValue);
             } else {
-                this._data.push(this._key_class_create(
-                              this._el_symbol, this._element_class,
-                              new_value, new_parameters));
+                this._data.push(this._keyClassCreate(
+                              this._elSymbol, this._elementClass,
+                              newValue, newParameters));
             }
 
-            this.emit('_added_element', this._data.length - 1);
+            this.emit('_addedElement', this._data.length - 1);
             this.emit('change', 'add', this._data.length - 1);
         },
         remove: function (index) {
-            this._data[index].emit('remove_from', this);
+            this._data[index].emit('removeFrom', this);
             this._data.splice(index, 1);
             this.emit('change', 'remove', index);
         }
@@ -553,15 +553,15 @@ Barricade = (function () {
 
     barricade.array = barricade.arraylike.extend({});
 
-    barricade.immutable_object = barricade.container.extend({
+    barricade.immutableObject = barricade.container.extend({
         create: function (json, parameters) {
             var self = this;
-            if (!this.hasOwnProperty('_key_classes')) {
-                Object.defineProperty(this, '_key_classes', {
+            if (!this.hasOwnProperty('_keyClasses')) {
+                Object.defineProperty(this, '_keyClasses', {
                     enumerable: false,
                     writable: true,
-                    value: this.get_keys().reduce(function (classes, key) {
-                            classes[key] = self._get_key_class(key);
+                    value: this.getKeys().reduce(function (classes, key) {
+                            classes[key] = self._getKeyClass(key);
                             return classes;
                         }, {})
                 });
@@ -571,109 +571,109 @@ Barricade = (function () {
         },
         _sift: function (json, parameters) {
             var self = this;
-            return this.get_keys().reduce(function (obj_out, key) {
-                obj_out[key] = self._key_class_create(
-                                   key, self._key_classes[key], json[key]);
-                return obj_out;
+            return this.getKeys().reduce(function (objOut, key) {
+                objOut[key] = self._keyClassCreate(
+                                   key, self._keyClasses[key], json[key]);
+                return objOut;
             }, {});
         },
         get: function (key) {
             return this._data[key];
         },
-        _do_set: function (key, new_value, new_parameters) {
-            var old_val = this._data[key];
+        _doSet: function (key, newValue, newParameters) {
+            var oldVal = this._data[key];
 
             if (this._schema.hasOwnProperty(key)) {
-                if (this._is_correct_type(new_value,
-                                          this._key_classes[key])) {
-                    this._data[key] = new_value;
+                if (this._isCorrectType(newValue,
+                                          this._keyClasses[key])) {
+                    this._data[key] = newValue;
                 } else {
-                    this._data[key] = this._key_class_create(
-                                          key, this._key_classes[key],
-                                          new_value, new_parameters);
+                    this._data[key] = this._keyClassCreate(
+                                          key, this._keyClasses[key],
+                                          newValue, newParameters);
                 }
 
-                this.emit('change', 'set', key, this._data[key], old_val);
+                this.emit('change', 'set', key, this._data[key], oldVal);
             } else {
                 console.error('object does not have key (key, schema)');
                 console.log(key, this._schema);
             }
         },
-        each: function (function_in, comparator_in) {
+        each: function (functionIn, comparatorIn) {
             var self = this,
-                keys = this.get_keys();
+                keys = this.getKeys();
 
-            if (comparator_in) {
-                keys.sort(comparator_in);
+            if (comparatorIn) {
+                keys.sort(comparatorIn);
             }
 
             keys.forEach(function (key) {
-                function_in(key, self._data[key]);
+                functionIn(key, self._data[key]);
             });
         },
-        is_empty: function () {
+        isEmpty: function () {
             return Object.keys(this._data).length === 0;
         },
-        toJSON: function (ignore_unused) {
+        toJSON: function (ignoreUnused) {
             var data = this._data;
-            return this.get_keys().reduce(function (json_out, key) {
-                if (ignore_unused !== true || data[key].is_used()) {
-                    json_out[key] = data[key].toJSON(ignore_unused);
+            return this.getKeys().reduce(function (jsonOut, key) {
+                if (ignoreUnused !== true || data[key].isUsed()) {
+                    jsonOut[key] = data[key].toJSON(ignoreUnused);
                 }
-                return json_out;
+                return jsonOut;
             }, {});
         },
-        get_keys: function () {
+        getKeys: function () {
             return Object.keys(this._schema).filter(function (key) {
                 return key.charAt(0) !== '@';
             });
         }
     });
 
-    barricade.mutable_object = barricade.arraylike.extend({
-        _el_symbol: '?',
+    barricade.mutableObject = barricade.arraylike.extend({
+        _elSymbol: '?',
         _sift: function (json, parameters) {
             return Object.keys(json).map(function (key) {
-                return this._key_class_create(
-                                   this._el_symbol, this._element_class,
+                return this._keyClassCreate(
+                                   this._elSymbol, this._elementClass,
                                    json[key], {id: key});
             }, this);
         },
-        get_ids: function () {
-            return this.to_array().map(function (value) {
-                return value.get_id();
+        getIDs: function () {
+            return this.toArray().map(function (value) {
+                return value.getID();
             });
         },
-        get_by_id: function (id) {
-            var pos = this.to_array().map(function (value) {
-                    return value.get_id();
+        getByID: function (id) {
+            var pos = this.toArray().map(function (value) {
+                    return value.getID();
                 }).indexOf(id);
             return this.get(pos);
         },
         contains: function (element) {
-            return this.to_array().some(function (value) {
+            return this.toArray().some(function (value) {
                 return element === value;
             });
         },
-        toJSON: function (ignore_unused) {
-            return this.to_array().reduce(function (json_out, element) {
-                if (json_out.hasOwnProperty(element.get_id())) {
-                    log_error("ID encountered multiple times: " +
-                                  element.get_id());
+        toJSON: function (ignoreUnused) {
+            return this.toArray().reduce(function (jsonOut, element) {
+                if (jsonOut.hasOwnProperty(element.getID())) {
+                    logError("ID encountered multiple times: " +
+                                  element.getID());
                 } else {
-                    json_out[element.get_id()] = 
-                        element.toJSON(ignore_unused);
+                    jsonOut[element.getID()] = 
+                        element.toJSON(ignoreUnused);
                 }
-                return json_out;
+                return jsonOut;
             }, {});
         },
-        push: function (new_json, new_parameters) {
-            if (barricade.get_type(new_parameters) !== Object ||
-                    !new_parameters.hasOwnProperty('id')) {
-                log_error('ID should be passed in ' + 
+        push: function (newJson, newParameters) {
+            if (barricade.getType(newParameters) !== Object ||
+                    !newParameters.hasOwnProperty('id')) {
+                logError('ID should be passed in ' + 
                           'with parameters object');
             } else {
-                barricade.array.push.call(this, new_json, new_parameters);
+                barricade.array.push.call(this, newJson, newParameters);
             }
         },
     });
@@ -685,23 +685,23 @@ Barricade = (function () {
         get: function () {
             return this._data;
         },
-        set: function (new_val) {
+        set: function (newVal) {
             var schema = this._schema;
 
-            function type_matches(new_val) {
-                return barricade.get_type(new_val) === schema['@type'];
+            function typeMatches(newVal) {
+                return barricade.getType(newVal) === schema['@type'];
             }
 
-            if (type_matches(new_val)) {
-                this._data = new_val;
+            if (typeMatches(newVal)) {
+                this._data = newVal;
                 this.emit('change');
             } else {
-                log_error("Setter - new value did not match " +
-                          "schema (new_val, schema)");
-                log_val(new_val, schema);
+                logError("Setter - new value did not match " +
+                          "schema (newVal, schema)");
+                logVal(newVal, schema);
             }
         },
-        is_empty: function () {
+        isEmpty: function () {
             if (this._schema['@type'] === Array) {
                 return this._data.length === 0;
             } else if (this._schema['@type'] === Object) {
@@ -715,8 +715,8 @@ Barricade = (function () {
         }
     });
 
-    barricade.get_type = (function () {
-        var to_string = Object.prototype.toString,
+    barricade.getType = (function () {
+        var toString = Object.prototype.toString,
             types = {
                 'boolean': Boolean,
                 'number': Number,
@@ -729,24 +729,24 @@ Barricade = (function () {
 
         return function (val) {
             return types[typeof val] || 
-                   types[to_string.call(val)] ||
+                   types[toString.call(val)] ||
                    (val ? Object : null);
         };
     }());
 
-    function log_msg(msg) {
+    function logMsg(msg) {
         console.log("Barricade: " + msg);
     }
 
-    function log_warning(msg) {
+    function logWarning(msg) {
         console.warn("Barricade: " + msg);
     }
 
-    function log_error(msg) {
+    function logError(msg) {
         console.error("Barricade: " + msg);
     }
 
-    function log_val(val1, val2) {
+    function logVal(val1, val2) {
         if (val2) {
             console.log(val1, val2);
         } else {
@@ -755,20 +755,20 @@ Barricade = (function () {
     }
 
     function BarricadeMain(schema) {
-        function schema_is_mutable() {
+        function schemaIsMutable() {
             return schema.hasOwnProperty('?');
         }
 
-        function schema_is_immutable() {
+        function schemaIsImmutable() {
             return Object.keys(schema).some(function (key) {
                 return key.charAt(0) !== '@' && key !== '?';
             });
         }
 
-        if (schema['@type'] === Object && schema_is_immutable()) {
-            return barricade.immutable_object.extend({_schema: schema});
-        } else if (schema['@type'] === Object && schema_is_mutable()) {
-            return barricade.mutable_object.extend({_schema: schema});
+        if (schema['@type'] === Object && schemaIsImmutable()) {
+            return barricade.immutableObject.extend({_schema: schema});
+        } else if (schema['@type'] === Object && schemaIsMutable()) {
+            return barricade.mutableObject.extend({_schema: schema});
         } else if (schema['@type'] === Array && schema.hasOwnProperty('*')) {
             return barricade.array.extend({_schema: schema});
         } else {
@@ -778,18 +778,18 @@ Barricade = (function () {
 
     barricade.poly = BarricadeMain;
 
-    BarricadeMain.get_type = barricade.get_type; // Very helpful function
+    BarricadeMain.getType = barricade.getType; // Very helpful function
 
     BarricadeMain.base = barricade.base;
     BarricadeMain.container = barricade.container;
     BarricadeMain.array = barricade.array;
     BarricadeMain.object = barricade.object;
-    BarricadeMain.immutable_object = barricade.immutable_object;
-    BarricadeMain.mutable_object = barricade.mutable_object;
+    BarricadeMain.immutableObject = barricade.immutableObject;
+    BarricadeMain.mutableObject = barricade.mutableObject;
     BarricadeMain.primitive = barricade.primitive;
     BarricadeMain.factory = barricade.factory;
     BarricadeMain.blueprint = blueprint;
-    BarricadeMain.event_emitter = event_emitter;
+    BarricadeMain.eventEmitter = eventEmitter;
     BarricadeMain.deferrable = barricade.deferrable;
     BarricadeMain.omittable = barricade.omittable;
     BarricadeMain.identifiable = barricade.identifiable;

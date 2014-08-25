@@ -1,5 +1,5 @@
-    barricade.get_type = (function () {
-        var to_string = Object.prototype.toString,
+    barricade.getType = (function () {
+        var toString = Object.prototype.toString,
             types = {
                 'boolean': Boolean,
                 'number': Number,
@@ -12,24 +12,24 @@
 
         return function (val) {
             return types[typeof val] || 
-                   types[to_string.call(val)] ||
+                   types[toString.call(val)] ||
                    (val ? Object : null);
         };
     }());
 
-    function log_msg(msg) {
+    function logMsg(msg) {
         console.log("Barricade: " + msg);
     }
 
-    function log_warning(msg) {
+    function logWarning(msg) {
         console.warn("Barricade: " + msg);
     }
 
-    function log_error(msg) {
+    function logError(msg) {
         console.error("Barricade: " + msg);
     }
 
-    function log_val(val1, val2) {
+    function logVal(val1, val2) {
         if (val2) {
             console.log(val1, val2);
         } else {
@@ -38,20 +38,20 @@
     }
 
     function BarricadeMain(schema) {
-        function schema_is_mutable() {
+        function schemaIsMutable() {
             return schema.hasOwnProperty('?');
         }
 
-        function schema_is_immutable() {
+        function schemaIsImmutable() {
             return Object.keys(schema).some(function (key) {
                 return key.charAt(0) !== '@' && key !== '?';
             });
         }
 
-        if (schema['@type'] === Object && schema_is_immutable()) {
-            return barricade.immutable_object.extend({_schema: schema});
-        } else if (schema['@type'] === Object && schema_is_mutable()) {
-            return barricade.mutable_object.extend({_schema: schema});
+        if (schema['@type'] === Object && schemaIsImmutable()) {
+            return barricade.immutableObject.extend({_schema: schema});
+        } else if (schema['@type'] === Object && schemaIsMutable()) {
+            return barricade.mutableObject.extend({_schema: schema});
         } else if (schema['@type'] === Array && schema.hasOwnProperty('*')) {
             return barricade.array.extend({_schema: schema});
         } else {
@@ -61,18 +61,18 @@
 
     barricade.poly = BarricadeMain;
 
-    BarricadeMain.get_type = barricade.get_type; // Very helpful function
+    BarricadeMain.getType = barricade.getType; // Very helpful function
 
     BarricadeMain.base = barricade.base;
     BarricadeMain.container = barricade.container;
     BarricadeMain.array = barricade.array;
     BarricadeMain.object = barricade.object;
-    BarricadeMain.immutable_object = barricade.immutable_object;
-    BarricadeMain.mutable_object = barricade.mutable_object;
+    BarricadeMain.immutableObject = barricade.immutableObject;
+    BarricadeMain.mutableObject = barricade.mutableObject;
     BarricadeMain.primitive = barricade.primitive;
     BarricadeMain.factory = barricade.factory;
     BarricadeMain.blueprint = blueprint;
-    BarricadeMain.event_emitter = event_emitter;
+    BarricadeMain.eventEmitter = eventEmitter;
     BarricadeMain.deferrable = barricade.deferrable;
     BarricadeMain.omittable = barricade.omittable;
     BarricadeMain.identifiable = barricade.identifiable;

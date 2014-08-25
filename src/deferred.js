@@ -1,25 +1,25 @@
     barricade.deferred = {
-        create: function (class_getter, on_resolve) {
+        create: function (classGetter, onResolve) {
             var self = Object.create(this),
                 callbacks = [],
-                is_resolved = false;
+                isResolved = false;
 
-            self.get_class = function () {
-                return class_getter();
+            self.getClass = function () {
+                return classGetter();
             };
 
             self.resolve = function (obj) {
                 var ref;
 
-                if (is_resolved) {
+                if (isResolved) {
                     throw new Error('Deferred already resolved');
                 }
 
-                ref = on_resolve(obj);
-                is_resolved = true;
+                ref = onResolve(obj);
+                isResolved = true;
 
                 if (ref === undefined) {
-                    log_error('Could not resolve reference');
+                    logError('Could not resolve reference');
                 } else {
                     callbacks.forEach(function (callback) {
                         callback(ref);
@@ -29,11 +29,11 @@
                 return ref;
             };
 
-            self.is_resolved = function () {
-                return is_resolved;
+            self.isResolved = function () {
+                return isResolved;
             };
 
-            self.add_callback = function (callback) {
+            self.addCallback = function (callback) {
                 callbacks.push(callback);
             };
             

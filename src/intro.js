@@ -24,28 +24,28 @@ Barricade = (function () {
     };
 
     barricade.identifiable = blueprint.create(function (id) {
-        this.get_id = function () {
+        this.getID = function () {
             return id;
         };
 
-        this.set_id = function (new_id) {
-            id = new_id;
+        this.setID = function (newID) {
+            id = newID;
             this.emit('change', 'id');
         };
     });
 
-    barricade.omittable = blueprint.create(function (is_used) {
-        this.is_used = function () {
+    barricade.omittable = blueprint.create(function (isUsed) {
+        this.isUsed = function () {
             // If required, it has to be used.
-            return this.is_required() || is_used;
+            return this.isRequired() || isUsed;
         };
 
-        this.set_is_used = function (new_used_value) {
-            is_used = !!new_used_value;
+        this.setIsUsed = function (newUsedValue) {
+            isUsed = !!newUsedValue;
         };
 
         this.on('change', function () {
-            is_used = !this.is_empty();
+            isUsed = !this.isEmpty();
         });
     });
 
@@ -53,23 +53,23 @@ Barricade = (function () {
         var self = this,
             deferred;
 
-        function resolver(needed_value) {
-            var ref = schema['@ref'].resolver(self, needed_value);
+        function resolver(neededValue) {
+            var ref = schema['@ref'].resolver(self, neededValue);
             if (ref === undefined) {
-                log_error('Could not resolve "' + 
+                logError('Could not resolve "' + 
                           JSON.stringify(self.toJSON()) + '"');
             }
             return ref;
         }
 
-        function has_dependency() {
+        function hasDependency() {
             return schema.hasOwnProperty('@ref');
         }
 
-        this.has_dependency = has_dependency;
+        this.hasDependency = hasDependency;
 
-        if (has_dependency()) {
-            this.get_deferred = function () {
+        if (hasDependency()) {
+            this.getDeferred = function () {
                 return deferred;
             };
 

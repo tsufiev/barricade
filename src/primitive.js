@@ -5,23 +5,23 @@
         get: function () {
             return this._data;
         },
-        set: function (new_val) {
+        set: function (newVal) {
             var schema = this._schema;
 
-            function type_matches(new_val) {
-                return barricade.get_type(new_val) === schema['@type'];
+            function typeMatches(newVal) {
+                return barricade.getType(newVal) === schema['@type'];
             }
 
-            if (type_matches(new_val)) {
-                this._data = new_val;
+            if (typeMatches(newVal)) {
+                this._data = newVal;
                 this.emit('change');
             } else {
-                log_error("Setter - new value did not match " +
-                          "schema (new_val, schema)");
-                log_val(new_val, schema);
+                logError("Setter - new value did not match " +
+                          "schema (newVal, schema)");
+                logVal(newVal, schema);
             }
         },
-        is_empty: function () {
+        isEmpty: function () {
             if (this._schema['@type'] === Array) {
                 return this._data.length === 0;
             } else if (this._schema['@type'] === Object) {
