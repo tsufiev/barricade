@@ -38,9 +38,8 @@
                     clone[key] = deep_clone(object[key]);
                     return clone;
                 }, {});
-            } else {
-                return object;
             }
+            return object;
         }
 
         function merge(target, source) {

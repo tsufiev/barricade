@@ -50,6 +50,7 @@ module.exports = function (grunt) {
                 unused: false,
                 maxlen: 80,
                 validthis: true,
+                laxbreak: true,
             }
         },
         jasmine: {

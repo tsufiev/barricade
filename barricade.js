@@ -131,23 +131,22 @@ Barricade = (function () {
             self.resolve = function (obj) {
                 var ref;
 
-                if (!is_resolved) {
-                    ref = on_resolve(obj);
-
-                    is_resolved = true;
-
-                    if (ref === undefined) {
-                        log_error('Could not resolve reference');
-                    } else {
-                        callbacks.forEach(function (callback) {
-                            callback(ref);
-                        });
-                    }
-
-                    return ref;
-                } else {
+                if (is_resolved) {
                     throw new Error('Deferred already resolved');
                 }
+
+                ref = on_resolve(obj);
+                is_resolved = true;
+
+                if (ref === undefined) {
+                    log_error('Could not resolve reference');
+                } else {
+                    callbacks.forEach(function (callback) {
+                        callback(ref);
+                    });
+                }
+
+                return ref;
             };
 
             self.is_resolved = function () {
@@ -202,9 +201,8 @@ Barricade = (function () {
                     clone[key] = deep_clone(object[key]);
                     return clone;
                 }, {});
-            } else {
-                return object;
             }
+            return object;
         }
 
         function merge(target, source) {
@@ -446,45 +444,31 @@ Barricade = (function () {
             this._attach_listeners(key);
         },
         _get_key_class: function (key) {
-            if (this._schema[key].hasOwnProperty('@class')) {
-                return this._schema[key]['@class'];
-            } else {
-                return barricade.poly(this._schema[key]);
-            }
+            return this._schema[key].hasOwnProperty('@class')
+                ? this._schema[key]['@class']
+                : barricade.poly(this._schema[key]);
         },
         _key_class_create: function (key, key_class, json, parameters) {
-            if (this._schema[key].hasOwnProperty('@factory')) {
-                return this._schema[key]['@factory'](json, parameters);
-            } else {
-                return key_class.create(json, parameters);
-            }
+            return this._schema[key].hasOwnProperty('@factory')
+                ? this._schema[key]['@factory'](json, parameters)
+                : key_class.create(json, parameters);
         },
         _is_correct_type: function (instance, class_) {
             var self = this;
 
             function is_ref_to() {
-               if (typeof class_._schema['@ref'].to === 'function') {
-                   return self._safe_instanceof(instance,
-                                                class_._schema['@ref'].to());
-               } else if (typeof class_._schema['@ref'].to === 'object') {
-                   return self._safe_instanceof(instance,
-                                                class_._schema['@ref'].to);
-               } else {
-                   throw new Error('Ref.to was ' + class_._schema['@ref'].to);
-               }
+                if (typeof class_._schema['@ref'].to === 'function') {
+                    return self._safe_instanceof(instance,
+                                                 class_._schema['@ref'].to());
+                } else if (typeof class_._schema['@ref'].to === 'object') {
+                    return self._safe_instanceof(instance,
+                                                 class_._schema['@ref'].to);
+                }
+                throw new Error('Ref.to was ' + class_._schema['@ref'].to);
             }
 
-            if (this._safe_instanceof(instance, class_)) {
-                return true;
-            } else if (class_._schema.hasOwnProperty('@ref') && is_ref_to()) {
-                return true;
-            } else if (class_._schema.hasOwnProperty('@accepts') &&
-                       this._safe_instanceof(instance,
-                                             class_._schema['@accepts'])) {
-                return true;
-            } else {
-                return false;
-            }
+            return this._safe_instanceof(instance, class_) ||
+                (class_._schema.hasOwnProperty('@ref') && is_ref_to());
         }
     });
 

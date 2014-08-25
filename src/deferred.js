@@ -11,23 +11,22 @@
             self.resolve = function (obj) {
                 var ref;
 
-                if (!is_resolved) {
-                    ref = on_resolve(obj);
-
-                    is_resolved = true;
-
-                    if (ref === undefined) {
-                        log_error('Could not resolve reference');
-                    } else {
-                        callbacks.forEach(function (callback) {
-                            callback(ref);
-                        });
-                    }
-
-                    return ref;
-                } else {
+                if (is_resolved) {
                     throw new Error('Deferred already resolved');
                 }
+
+                ref = on_resolve(obj);
+                is_resolved = true;
+
+                if (ref === undefined) {
+                    log_error('Could not resolve reference');
+                } else {
+                    callbacks.forEach(function (callback) {
+                        callback(ref);
+                    });
+                }
+
+                return ref;
             };
 
             self.is_resolved = function () {
