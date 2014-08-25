@@ -75,5 +75,6 @@
     BarricadeMain.event_emitter = event_emitter;
     BarricadeMain.deferrable = barricade.deferrable;
     BarricadeMain.omittable = barricade.omittable;
+    BarricadeMain.identifiable = barricade.identifiable;
 
     return BarricadeMain;

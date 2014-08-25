@@ -165,17 +165,30 @@ Barricade = (function () {
     barricade.base = (function () {
         var base = {};
 
+        function for_in_keys(obj) {
+            var key,
+                keys = [];
+
+            for (key in obj) {
+                keys.push(key);
+            }
+
+            return keys;
+        }
+
+        function is_plain_object(obj) {
+            return barricade.get_type(obj) === Object &&
+                Object.getPrototypeOf(Object.getPrototypeOf(obj)) === null;
+        }
+
         function extend(extension) {
             function add_property(object, prop) {
-                var is_public = prop.charAt(0) !== '_';
-
-                Object.defineProperty(object, prop, {
-                    enumerable: is_public,
+                return Object.defineProperty(object, prop, {
+                    enumerable: true,
                     writable: true,
                     configurable: true,
                     value: extension[prop]
                 });
-                return object;
             }
 
             // add properties to extended object
@@ -184,8 +197,8 @@ Barricade = (function () {
         }
 
         function deep_clone(object) {
-            if (barricade.get_type(object) === Object) {
-                return Object.keys(object).reduce(function (clone, key) {
+            if (is_plain_object(object)) {
+                return for_in_keys(object).reduce(function (clone, key) {
                     clone[key] = deep_clone(object[key]);
                     return clone;
                 }, {});
@@ -194,13 +207,11 @@ Barricade = (function () {
             }
         }
 
-        // Merges source's own enumerable properties into target. Does not 
-        // account for prototype chain.
         function merge(target, source) {
-            Object.keys(source).forEach(function (key) {
+            for_in_keys(source).forEach(function (key) {
                 if (target.hasOwnProperty(key) &&
-                        barricade.get_type(target[key]) === Object &&
-                        barricade.get_type(source[key]) === Object) {
+                        is_plain_object(target[key]) &&
+                        is_plain_object(source[key])) {
                     merge(target[key], source[key]);
                 } else {
                     target[key] = deep_clone(source[key]);
@@ -250,17 +261,8 @@ Barricade = (function () {
         return base.extend({
             create: function (json, parameters) {
                 var self = this.extend({}),
-                    alt_self,
                     schema = self._schema,
                     type = schema['@type'];
-
-                if (schema.hasOwnProperty('@alternate_create')) {
-                    alt_self = schema['@alternate_create'](json, parameters);
-
-                    if (alt_self) {
-                        return alt_self;
-                    }
-                }
 
                 if (!parameters) {
                     parameters = {};
@@ -289,9 +291,6 @@ Barricade = (function () {
                     self.toJSON = schema['@toJSON'];
                 }
 
-                self._accepts = schema.hasOwnProperty('@accepts') ?
-                                    [].concat(schema['@accepts']) : [];
-
                 event_emitter.call(self);
                 barricade.omittable.call(self, parameters.is_used !== false);
                 barricade.deferrable.call(self, schema);
@@ -309,9 +308,6 @@ Barricade = (function () {
                 return typeof instance === 'object' &&
                     ('instanceof' in instance) &&
                     instance.instanceof(class_);
-            },
-            accepts: function (type) {
-                return this._accepts.indexOf(type) > -1;
             },
             get_primitive_type: function () {
                 return this._schema['@type'];
@@ -812,6 +808,7 @@ Barricade = (function () {
     BarricadeMain.event_emitter = event_emitter;
     BarricadeMain.deferrable = barricade.deferrable;
     BarricadeMain.omittable = barricade.omittable;
+    BarricadeMain.identifiable = barricade.identifiable;
 
     return BarricadeMain;
 
