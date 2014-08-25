@@ -50,14 +50,14 @@ Barricade = (function () {
     });
 
     barricade.deferrable = blueprint.create(function (schema) {
-        var that = this,
+        var self = this,
             deferred;
 
         function resolver(needed_value) {
-            var ref = schema['@ref'].resolver(that, needed_value);
+            var ref = schema['@ref'].resolver(self, needed_value);
             if (ref === undefined) {
                 log_error('Could not resolve "' + 
-                          JSON.stringify(that.toJSON()) + '"');
+                          JSON.stringify(self.toJSON()) + '"');
             }
             return ref;
         }
