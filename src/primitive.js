@@ -12,9 +12,12 @@
                 return barricade.getType(newVal) === schema['@type'];
             }
 
-            if (typeMatches(newVal)) {
+            if (typeMatches(newVal) && this._validate(newVal)) {
                 this._data = newVal;
+                this.emit('validation', 'succeeded');
                 this.emit('change');
+            } else if (this.hasError()) {
+                this.emit('validation', 'failed');
             } else {
                 logError("Setter - new value did not match " +
                           "schema (newVal, schema)");

@@ -129,6 +129,7 @@
                 eventEmitter.call(self);
                 barricade.omittable.call(self, parameters.isUsed !== false);
                 barricade.deferrable.call(self, schema);
+                barricade.validatable.call(self, schema);
 
                 if (parameters.hasOwnProperty('id')) {
                     barricade.identifiable.call(self, parameters.id);

@@ -78,6 +78,31 @@ Barricade = (function () {
         }
     });
 
+    barricade.validatable = blueprint.create(function (schema) {
+        var constraints = schema['@constraints'],
+            error = null;
+
+        if (barricade.getType(constraints) !== Array) {
+            constraints = [];
+        }
+
+        this.hasError = function () { return error !== null; };
+        this.getError = function () { return error || ''; };
+
+        this._validate = function (value) {
+            function getConstraintMessage(i, lastMessage) {
+                if (lastMessage !== true) {
+                    return lastMessage;
+                } else if (i < constraints.length) {
+                    return getConstraintMessage(i + 1, constraints[i](value));
+                }
+                return null;
+            }
+            error = getConstraintMessage(0, true);
+            return !this.hasError();
+        };
+    });
+
     var eventEmitter = blueprint.create(function () {
         var events = {};
 
@@ -292,6 +317,7 @@ Barricade = (function () {
                 eventEmitter.call(self);
                 barricade.omittable.call(self, parameters.isUsed !== false);
                 barricade.deferrable.call(self, schema);
+                barricade.validatable.call(self, schema);
 
                 if (parameters.hasOwnProperty('id')) {
                     barricade.identifiable.call(self, parameters.id);
@@ -692,9 +718,12 @@ Barricade = (function () {
                 return barricade.getType(newVal) === schema['@type'];
             }
 
-            if (typeMatches(newVal)) {
+            if (typeMatches(newVal) && this._validate(newVal)) {
                 this._data = newVal;
+                this.emit('validation', 'succeeded');
                 this.emit('change');
+            } else if (this.hasError()) {
+                this.emit('validation', 'failed');
             } else {
                 logError("Setter - new value did not match " +
                           "schema (newVal, schema)");
@@ -787,7 +816,6 @@ Barricade = (function () {
     BarricadeMain.immutableObject = barricade.immutableObject;
     BarricadeMain.mutableObject = barricade.mutableObject;
     BarricadeMain.primitive = barricade.primitive;
-    BarricadeMain.factory = barricade.factory;
     BarricadeMain.blueprint = blueprint;
     BarricadeMain.eventEmitter = eventEmitter;
     BarricadeMain.deferrable = barricade.deferrable;

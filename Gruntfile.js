@@ -29,6 +29,7 @@ module.exports = function (grunt) {
 
                     // Jasmine
                     'describe': false,
+                    'xdescribe': false,
                     'it': false,
                     'xit': false,
                     'expect': false,
