@@ -126,15 +126,6 @@ Barricade = (function () {
             return (typeof enum_ === 'function') ? enum_() : enum_;
         }
 
-        function getValues() {
-            var curEnum = getEnum();
-            if (barricade.getType(curEnum[0]) === Object) {
-                return curEnum.map(function (value) { return value.value; });
-            } else {
-                return curEnum;
-            }
-        }
-
         this.getEnumLabels = function () {
             var curEnum = getEnum();
             if (barricade.getType(curEnum[0]) === Object) {
@@ -144,8 +135,17 @@ Barricade = (function () {
             }
         };
 
+        this.getEnumValues = function () {
+            var curEnum = getEnum();
+            if (barricade.getType(curEnum[0]) === Object) {
+                return curEnum.map(function (value) { return value.value; });
+            } else {
+                return curEnum;
+            }
+        };
+
         this.addConstraint(function (value) {
-            return (getValues().indexOf(value) > -1) ||
+            return (self.getEnumValues().indexOf(value) > -1) ||
                 'Value can only be one of ' + self.getEnumLabels().join(', ');
         });
     });
