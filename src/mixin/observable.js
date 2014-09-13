@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-    var eventEmitter = blueprint.create(function () {
+    var observable = blueprint.create(function () {
         var events = {};
 
         function hasEvent(eventName) {

@@ -776,7 +776,7 @@ describe('Barricade', function () {
         });
     });
 
-    describe('Event emitter', function () {
+    describe('Observable', function () {
         function getCallback(name, storageObj) {
             storageObj[name] = 0;
 

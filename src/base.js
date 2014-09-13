@@ -140,7 +140,7 @@
                     self.toJSON = schema['@toJSON'];
                 }
 
-                eventEmitter.call(self);
+                observable.call(self);
                 barricade.omittable.call(self, parameters.isUsed !== false);
                 barricade.deferrable.call(self, schema);
                 barricade.validatable.call(self, schema);

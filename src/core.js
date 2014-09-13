@@ -85,7 +85,7 @@
     BarricadeMain.mutableObject = barricade.mutableObject;
     BarricadeMain.primitive = barricade.primitive;
     BarricadeMain.blueprint = blueprint;
-    BarricadeMain.eventEmitter = eventEmitter;
+    BarricadeMain.observable = observable;
     BarricadeMain.deferrable = barricade.deferrable;
     BarricadeMain.omittable = barricade.omittable;
     BarricadeMain.identifiable = barricade.identifiable;

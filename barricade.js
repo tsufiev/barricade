@@ -150,7 +150,7 @@ Barricade = (function () {
         });
     });
 
-    var eventEmitter = blueprint.create(function () {
+    var observable = blueprint.create(function () {
         var events = {};
 
         function hasEvent(eventName) {
@@ -361,7 +361,7 @@ Barricade = (function () {
                     self.toJSON = schema['@toJSON'];
                 }
 
-                eventEmitter.call(self);
+                observable.call(self);
                 barricade.omittable.call(self, parameters.isUsed !== false);
                 barricade.deferrable.call(self, schema);
                 barricade.validatable.call(self, schema);
@@ -868,7 +868,7 @@ Barricade = (function () {
     BarricadeMain.mutableObject = barricade.mutableObject;
     BarricadeMain.primitive = barricade.primitive;
     BarricadeMain.blueprint = blueprint;
-    BarricadeMain.eventEmitter = eventEmitter;
+    BarricadeMain.observable = observable;
     BarricadeMain.deferrable = barricade.deferrable;
     BarricadeMain.omittable = barricade.omittable;
     BarricadeMain.identifiable = barricade.identifiable;

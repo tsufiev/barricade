@@ -43,7 +43,7 @@ module.exports = function (grunt) {
                     'src/mixin/deferrable.js',
                     'src/mixin/validatable.js',
                     'src/mixin/enumerated.js',
-                    'src/mixin/event_emitter.js',
+                    'src/mixin/observable.js',
                     'src/util/deferred.js',
                     'src/base.js',
                     'src/container.js',
