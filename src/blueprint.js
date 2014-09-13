@@ -12,7 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-Barricade = (function () {
-    "use strict";
+    var blueprint = {
+            create: function (f) {
+                var g = function () {
+                        if (this.hasOwnProperty('_parents')) {
+                            this._parents.push(g);
+                        } else {
+                            Object.defineProperty(this, '_parents', {
+                                value: [g]
+                            });
+                        }
 
-    var barricade = {};
+                        f.apply(this, arguments);
+                    };
+
+                return g;
+            }
+    };

@@ -12,7 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-Barricade = (function () {
-    "use strict";
+    barricade.omittable = blueprint.create(function (isUsed) {
+        this.isUsed = function () {
+            // If required, it has to be used.
+            return this.isRequired() || isUsed;
+        };
 
-    var barricade = {};
+        this.setIsUsed = function (newUsedValue) {
+            isUsed = !!newUsedValue;
+        };
+
+        this.on('change', function () {
+            isUsed = !this.isEmpty();
+        });
+    });

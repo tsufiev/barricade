@@ -37,6 +37,12 @@ module.exports = function (grunt) {
             barricade: {
                 src: [
                     'src/intro.js',
+                    'src/blueprint.js',
+                    'src/identifiable.js',
+                    'src/omittable.js',
+                    'src/deferrable.js',
+                    'src/validatable.js',
+                    'src/enumerated.js',
                     'src/event_emitter.js',
                     'src/deferred.js',
                     'src/base.js',

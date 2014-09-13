@@ -12,7 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-Barricade = (function () {
-    "use strict";
+    barricade.identifiable = blueprint.create(function (id) {
+        this.getID = function () {
+            return id;
+        };
 
-    var barricade = {};
+        this.setID = function (newID) {
+            id = newID;
+            this.emit('change', 'id');
+        };
+    });
