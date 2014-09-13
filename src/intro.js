@@ -14,5 +14,3 @@
 
 Barricade = (function () {
     "use strict";
-
-    var barricade = {};

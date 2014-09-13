@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-    barricade.base = (function () {
+    var Base = (function () {
         var base = {};
 
         function forInKeys(obj) {
@@ -27,7 +27,7 @@
         }
 
         function isPlainObject(obj) {
-            return barricade.getType(obj) === Object &&
+            return getType(obj) === Object &&
                 Object.getPrototypeOf(Object.getPrototypeOf(obj)) === null;
         }
 
@@ -121,7 +121,7 @@
                     json = schema['@inputMassager'](json);
                 }
 
-                if (barricade.getType(json) !== type) {
+                if (getType(json) !== type) {
                     if (json) {
                         logError("Type mismatch (json, schema)");
                         logVal(json, schema);
@@ -140,17 +140,17 @@
                     self.toJSON = schema['@toJSON'];
                 }
 
-                observable.call(self);
-                barricade.omittable.call(self, parameters.isUsed !== false);
-                barricade.deferrable.call(self, schema);
-                barricade.validatable.call(self, schema);
+                Observable.call(self);
+                Omittable.call(self, parameters.isUsed !== false);
+                Deferrable.call(self, schema);
+                Validatable.call(self, schema);
 
                 if (schema.hasOwnProperty('@enum')) {
-                    barricade.enumerated.call(self, schema['@enum']);
+                    Enumerated.call(self, schema['@enum']);
                 }
 
                 if (parameters.hasOwnProperty('id')) {
-                    barricade.identifiable.call(self, parameters.id);
+                    Identifiable.call(self, parameters.id);
                 }
 
                 return self;

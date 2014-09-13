@@ -12,4 +12,4 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-    barricade.array = barricade.arraylike.extend({});
+    var Array_ = Arraylike.extend({});

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-    barricade.getType = (function () {
+    var getType = (function () {
         var toString = Object.prototype.toString,
             types = {
                 'boolean': Boolean,
@@ -51,7 +51,9 @@
         }
     }
 
-    function BarricadeMain(schema) {
+    var BarricadeMain = {};
+
+    BarricadeMain.create = function (schema) {
         function schemaIsMutable() {
             return schema.hasOwnProperty('?');
         }
@@ -63,32 +65,29 @@
         }
 
         if (schema['@type'] === Object && schemaIsImmutable()) {
-            return barricade.immutableObject.extend({_schema: schema});
+            return ImmutableObject.extend({_schema: schema});
         } else if (schema['@type'] === Object && schemaIsMutable()) {
-            return barricade.mutableObject.extend({_schema: schema});
+            return MutableObject.extend({_schema: schema});
         } else if (schema['@type'] === Array && schema.hasOwnProperty('*')) {
-            return barricade.array.extend({_schema: schema});
+            return Array_.extend({_schema: schema});
         } else {
-            return barricade.primitive.extend({_schema: schema});
+            return Primitive.extend({_schema: schema});
         }
-    }
+    };
 
-    barricade.poly = BarricadeMain;
+    BarricadeMain.getType = getType; // Very helpful function
 
-    BarricadeMain.getType = barricade.getType; // Very helpful function
-
-    BarricadeMain.base = barricade.base;
-    BarricadeMain.container = barricade.container;
-    BarricadeMain.array = barricade.array;
-    BarricadeMain.object = barricade.object;
-    BarricadeMain.immutableObject = barricade.immutableObject;
-    BarricadeMain.mutableObject = barricade.mutableObject;
-    BarricadeMain.primitive = barricade.primitive;
-    BarricadeMain.blueprint = blueprint;
-    BarricadeMain.observable = observable;
-    BarricadeMain.deferrable = barricade.deferrable;
-    BarricadeMain.omittable = barricade.omittable;
-    BarricadeMain.identifiable = barricade.identifiable;
-    BarricadeMain.enumerated = barricade.enumerated;
+    BarricadeMain.Base = Base;
+    BarricadeMain.Container = Container;
+    BarricadeMain.Array = Array_;
+    BarricadeMain.ImmutableObject = ImmutableObject;
+    BarricadeMain.MutableObject = MutableObject;
+    BarricadeMain.Primitive = Primitive;
+    BarricadeMain.Blueprint = Blueprint;
+    BarricadeMain.Observable = Observable;
+    BarricadeMain.Deferrable = Deferrable;
+    BarricadeMain.Omittable = Omittable;
+    BarricadeMain.Identifiable = Identifiable;
+    BarricadeMain.Enumerated = Enumerated;
 
     return BarricadeMain;

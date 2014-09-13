@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-    barricade.validatable = blueprint.create(function (schema) {
+    var Validatable = Blueprint.create(function (schema) {
         var constraints = schema['@constraints'],
             error = null;
 
-        if (barricade.getType(constraints) !== Array) {
+        if (getType(constraints) !== Array) {
             constraints = [];
         }
 

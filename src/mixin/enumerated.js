@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-    barricade.enumerated = blueprint.create(function(enum_) {
+    var Enumerated = Blueprint.create(function(enum_) {
         var self = this;
 
         function getEnum() {
@@ -21,7 +21,7 @@
 
         this.getEnumLabels = function () {
             var curEnum = getEnum();
-            if (barricade.getType(curEnum[0]) === Object) {
+            if (getType(curEnum[0]) === Object) {
                 return curEnum.map(function (value) { return value.label; });
             } else {
                 return curEnum;
@@ -30,7 +30,7 @@
 
         this.getEnumValues = function () {
             var curEnum = getEnum();
-            if (barricade.getType(curEnum[0]) === Object) {
+            if (getType(curEnum[0]) === Object) {
                 return curEnum.map(function (value) { return value.value; });
             } else {
                 return curEnum;

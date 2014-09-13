@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-    barricade.primitive = barricade.base.extend({
+    var Primitive = Base.extend({
         _sift: function (json, parameters) {
             return json;
         },
@@ -23,7 +23,7 @@
             var schema = this._schema;
 
             function typeMatches(newVal) {
-                return barricade.getType(newVal) === schema['@type'];
+                return getType(newVal) === schema['@type'];
             }
 
             if (typeMatches(newVal) && this._validate(newVal)) {

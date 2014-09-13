@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-    barricade.deferrable = blueprint.create(function (schema) {
+    var Deferrable = Blueprint.create(function (schema) {
         var self = this,
             deferred;
 
@@ -36,7 +36,7 @@
                 return deferred;
             };
 
-            deferred = barricade.deferred.create(schema['@ref'].needs,
+            deferred = Deferred.create(schema['@ref'].needs,
                                                  resolver);
         }
     });

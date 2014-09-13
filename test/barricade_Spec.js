@@ -36,8 +36,8 @@ describe('Barricade', function () {
         });
     }
 
-    it('exists as a function', function () {
-        expect(typeof Barricade).toBe('function');
+    it('exists as an object', function () {
+        expect(typeof Barricade).toBe('object');
     });
 
     ///
@@ -52,23 +52,23 @@ describe('Barricade', function () {
                     existingMember2: "foo"
                 };
 
-            this.namespace.BooleanClass = Barricade({
+            this.namespace.BooleanClass = Barricade.create({
                 '@type': Boolean
             });
 
-            this.namespace.NumberClass = Barricade({
+            this.namespace.NumberClass = Barricade.create({
                 '@type': Number
             });
 
-            this.namespace.StringClass = Barricade({
+            this.namespace.StringClass = Barricade.create({
                 '@type': String
             });
 
-            this.namespace.ObjectClass = Barricade({
+            this.namespace.ObjectClass = Barricade.create({
                 '@type': Object
             });
             
-            this.namespace.ArrayClass = Barricade({
+            this.namespace.ArrayClass = Barricade.create({
                 '@type': Array
             });
         });
@@ -286,7 +286,7 @@ describe('Barricade', function () {
 
                 this.namespace = {};
 
-                this.namespace.FixedKeyClass = Barricade({
+                this.namespace.FixedKeyClass = Barricade.create({
                     '@type': Object,
 
                     'stringKey': {
@@ -420,7 +420,7 @@ describe('Barricade', function () {
 
                 this.namespace = {};
 
-                this.namespace.WildClass = Barricade({
+                this.namespace.WildClass = Barricade.create({
                     '@type': Object,
 
                     '?': {
@@ -488,11 +488,11 @@ describe('Barricade', function () {
             });
 
             it('nested class should accept id in parameters', function () {
-                this.namespace.NestedClass = Barricade({
+                this.namespace.NestedClass = Barricade.create({
                     '@type': String
                 });
 
-                this.namespace.WildClass2 = Barricade({
+                this.namespace.WildClass2 = Barricade.create({
                     '@type': Object,
                     '?': {'@class': this.namespace.NestedClass}
                 });
@@ -541,7 +541,7 @@ describe('Barricade', function () {
 
             this.namespace = {};
 
-            this.namespace.ArrayClass = Barricade({
+            this.namespace.ArrayClass = Barricade.create({
                 '@type': Array,
 
                 '*': {
@@ -603,11 +603,11 @@ describe('Barricade', function () {
         });
 
         it('.push() should accept instances of element\'s class', function () {
-            this.namespace.ArrayElement = Barricade({
+            this.namespace.ArrayElement = Barricade.create({
                 '@type': String
             });
 
-            this.namespace.ArrayWithElementClass = Barricade({
+            this.namespace.ArrayWithElementClass = Barricade.create({
                 '@type': Array,
                 '*': {'@class': this.namespace.ArrayElement}
             });
@@ -732,7 +732,7 @@ describe('Barricade', function () {
         beforeEach(function () {
             this.namespace = {};
 
-            this.namespace.FixedKeyClass = Barricade({
+            this.namespace.FixedKeyClass = Barricade.create({
                 '@type': Object,
 
                 'stringKeyExplicit': {
@@ -791,7 +791,7 @@ describe('Barricade', function () {
                 instance,
                 change = getCallback('change', calls);
 
-            namespace.SimpleString = Barricade({
+            namespace.SimpleString = Barricade.create({
                 '@type': String
             });
 
@@ -811,7 +811,7 @@ describe('Barricade', function () {
                 this.namespace = {};
                 this.calls = {};
 
-                this.namespace.ArrayClass = Barricade({
+                this.namespace.ArrayClass = Barricade.create({
                     '@type': Array,
                     '*': {'@type': String}
                 });
@@ -849,7 +849,7 @@ describe('Barricade', function () {
             beforeEach(function () {
                 this.namespace = {};
 
-                this.namespace.MutableObjectClass = Barricade({
+                this.namespace.MutableObjectClass = Barricade.create({
                     '@type': Object,
                     '?': {'@type': String}
                 });
@@ -881,7 +881,7 @@ describe('Barricade', function () {
                 this.namespace = {};
                 this.calls = {};
 
-                this.namespace.NestedObject = Barricade({
+                this.namespace.NestedObject = Barricade.create({
                     '@type': Object,
                     'a': {
                         '@type': Object,
@@ -920,9 +920,9 @@ describe('Barricade', function () {
             this.namespace = {};
             this.numCalls = 0;
 
-            this.namespace.IsReferredTo = Barricade({'@type': Number});
+            this.namespace.IsReferredTo = Barricade.create({'@type': Number});
 
-            this.namespace.NeedsReference = Barricade({
+            this.namespace.NeedsReference = Barricade.create({
                 '@type': String,
                 '@ref': {
                     to: this.namespace.IsReferredTo,
@@ -936,13 +936,13 @@ describe('Barricade', function () {
                 }
             });
 
-            this.namespace.Parent = Barricade({
+            this.namespace.Parent = Barricade.create({
                 '@type': Object,
                 'a': {'@class': this.namespace.NeedsReference},
                 'b': {'@class': this.namespace.IsReferredTo}
             });
             
-            this.namespace.Parent2 = Barricade({
+            this.namespace.Parent2 = Barricade.create({
                 '@type': Object,
                 'a': {
                     '@type': Object,
@@ -964,7 +964,7 @@ describe('Barricade', function () {
                 }
             });
 
-            this.namespace.Grandparent = Barricade({
+            this.namespace.Grandparent = Barricade.create({
                 '@type': Object,
 
                 'referredTo': {'@class': this.namespace.IsReferredTo},
@@ -1011,7 +1011,7 @@ describe('Barricade', function () {
         beforeEach(function () {
             this.namespace = {};
 
-            this.namespace.a = Barricade({
+            this.namespace.a = Barricade.create({
                 '@type': String,
                 '@constraints': [function (val) { 
                     return val.toLowerCase() === 'a' ||
@@ -1019,7 +1019,7 @@ describe('Barricade', function () {
                 }]
             });
 
-            this.namespace.str = Barricade({
+            this.namespace.str = Barricade.create({
                 '@type': String,
                 '@constraints': [
                     function (s) {
@@ -1152,12 +1152,12 @@ describe('Barricade', function () {
 
     describe('@enum', function () {
         beforeEach(function () {
-            this.stringClass = Barricade({
+            this.stringClass = Barricade.create({
                 '@type': String,
                 '@enum': ['foo', 'bar', 'baz']
             });
 
-            this.labelClass = Barricade({
+            this.labelClass = Barricade.create({
                 '@type': Number,
                 '@enum': [
                     {label: 'one', value: 1},
@@ -1167,7 +1167,7 @@ describe('Barricade', function () {
                 ]
             });
 
-            this.functionClass = Barricade({
+            this.functionClass = Barricade.create({
                 '@type': String,
                 '@enum': function () { return ['a', 'b', 'c']; }
             });
@@ -1267,7 +1267,7 @@ describe('Barricade', function () {
 
         it('should allow enums from functions to be updatable', function () {
             var myEnum = ['foo'],
-                myClass = Barricade({
+                myClass = Barricade.create({
                     '@type': String,
                     '@enum': function () { return myEnum; }
                 }),

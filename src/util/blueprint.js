@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-    var blueprint = {
+    var Blueprint = {
             create: function (f) {
                 var g = function () {
                         if (this.hasOwnProperty('_parents')) {

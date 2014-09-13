@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-    barricade.omittable = blueprint.create(function (isUsed) {
+    var Omittable = Blueprint.create(function (isUsed) {
         this.isUsed = function () {
             // If required, it has to be used.
             return this.isRequired() || isUsed;
