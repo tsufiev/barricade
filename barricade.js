@@ -812,14 +812,6 @@ Barricade = (function () {
         };
     }());
 
-    function logMsg(msg) {
-        console.log("Barricade: " + msg);
-    }
-
-    function logWarning(msg) {
-        console.warn("Barricade: " + msg);
-    }
-
     function logError(msg) {
         console.error("Barricade: " + msg);
     }
