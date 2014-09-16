@@ -872,6 +872,7 @@ Barricade = (function () {
     BarricadeMain.deferrable = barricade.deferrable;
     BarricadeMain.omittable = barricade.omittable;
     BarricadeMain.identifiable = barricade.identifiable;
+    BarricadeMain.enumerated = barricade.enumerated;
 
     return BarricadeMain;
 
