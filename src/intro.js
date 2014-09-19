@@ -113,4 +113,39 @@ Barricade = (function () {
             error = getConstraintMessage(0, true);
             return !this.hasError();
         };
+
+        this.addConstraint = function (newConstraint) {
+            constraints.push(newConstraint);
+        };
+    });
+
+    barricade.enumerated = blueprint.create(function(enum_) {
+        var self = this;
+
+        function getEnum() {
+            return (typeof enum_ === 'function') ? enum_() : enum_;
+        }
+
+        this.getEnumLabels = function () {
+            var curEnum = getEnum();
+            if (barricade.getType(curEnum[0]) === Object) {
+                return curEnum.map(function (value) { return value.label; });
+            } else {
+                return curEnum;
+            }
+        };
+
+        this.getEnumValues = function () {
+            var curEnum = getEnum();
+            if (barricade.getType(curEnum[0]) === Object) {
+                return curEnum.map(function (value) { return value.value; });
+            } else {
+                return curEnum;
+            }
+        };
+
+        this.addConstraint(function (value) {
+            return (self.getEnumValues().indexOf(value) > -1) ||
+                'Value can only be one of ' + self.getEnumLabels().join(', ');
+        });
     });

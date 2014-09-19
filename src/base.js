@@ -145,6 +145,10 @@
                 barricade.deferrable.call(self, schema);
                 barricade.validatable.call(self, schema);
 
+                if (schema.hasOwnProperty('@enum')) {
+                    barricade.enumerated.call(self, schema['@enum']);
+                }
+
                 if (parameters.hasOwnProperty('id')) {
                     barricade.identifiable.call(self, parameters.id);
                 }
