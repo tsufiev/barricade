@@ -149,4 +149,18 @@ describe('@enum', function () {
             expect(myInstance.get()).toBe('bar');
             expect(myInstance.hasError()).toBe(false);
     });
+
+    it('should pass object into enum function', function () {
+        var myEnum = ['foo'],
+            myClass = Barricade.create({
+                '@type': String,
+                '@enum': function () {
+                    expect(this).toBe(myInstance);
+                    return myEnum;
+                }
+            }),
+            myInstance = myClass.create('foo');
+
+            myInstance.set('bar');
+    });
 });
