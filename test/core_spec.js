@@ -12,4 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-    var Array_ = Arraylike.extend({});
+beforeEach(SAVE_GLOBAL_STATE);
+afterEach(ENSURE_GLOBAL_OBJECT_UNPOLLUTED);
+
+describe('Core', function () {
+    it('Barricade exists as an object', function () {
+        expect(typeof Barricade).toBe('object');
+    });
+});

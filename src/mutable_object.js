@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-    barricade.mutableObject = barricade.arraylike.extend({
+    var MutableObject = Arraylike.extend({
         _elSymbol: '?',
         _sift: function (json, parameters) {
             return Object.keys(json).map(function (key) {
@@ -50,12 +50,12 @@
             }, {});
         },
         push: function (newJson, newParameters) {
-            if (barricade.getType(newParameters) !== Object ||
+            if (getType(newParameters) !== Object ||
                     !newParameters.hasOwnProperty('id')) {
                 logError('ID should be passed in ' + 
                           'with parameters object');
             } else {
-                barricade.array.push.call(this, newJson, newParameters);
+                Array_.push.call(this, newJson, newParameters);
             }
         },
     });

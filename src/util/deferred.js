@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-    barricade.deferred = {
+    var Deferred = {
         create: function (classGetter, onResolve) {
             var self = Object.create(this),
                 callbacks = [],

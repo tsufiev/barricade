@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-    barricade.immutableObject = barricade.container.extend({
+    var ImmutableObject = Container.extend({
         create: function (json, parameters) {
             var self = this;
             if (!this.hasOwnProperty('_keyClasses')) {
@@ -26,7 +26,7 @@
                 });
             }
 
-            return barricade.container.create.call(this, json, parameters);
+            return Container.create.call(this, json, parameters);
         },
         _sift: function (json, parameters) {
             var self = this;

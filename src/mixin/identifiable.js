@@ -12,4 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-    var Array_ = Arraylike.extend({});
+    var Identifiable = Blueprint.create(function (id) {
+        this.getID = function () {
+            return id;
+        };
+
+        this.setID = function (newID) {
+            id = newID;
+            this.emit('change', 'id');
+        };
+    });

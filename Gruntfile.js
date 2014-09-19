@@ -37,8 +37,14 @@ module.exports = function (grunt) {
             barricade: {
                 src: [
                     'src/intro.js',
-                    'src/event_emitter.js',
-                    'src/deferred.js',
+                    'src/util/blueprint.js',
+                    'src/mixin/identifiable.js',
+                    'src/mixin/omittable.js',
+                    'src/mixin/deferrable.js',
+                    'src/mixin/validatable.js',
+                    'src/mixin/enumerated.js',
+                    'src/mixin/observable.js',
+                    'src/util/deferred.js',
                     'src/base.js',
                     'src/container.js',
                     'src/arraylike.js',
@@ -63,7 +69,7 @@ module.exports = function (grunt) {
             }
         },
         jshint: {
-            files: ['test/*.js', 'barricade.js'],
+            files: ['test/**/*.js', 'barricade.js'],
             options: {
                 globals: {
                     'console': false,
@@ -77,6 +83,10 @@ module.exports = function (grunt) {
                     'expect': false,
                     'beforeEach': false,
                     'afterEach': false,
+
+                    'GLOBAL_COPY': true,
+                    'SAVE_GLOBAL_STATE': false,
+                    'ENSURE_GLOBAL_OBJECT_UNPOLLUTED': false,
 
                     // Barricade
                     'Barricade': true,
@@ -97,9 +107,23 @@ module.exports = function (grunt) {
             }
         },
         jasmine: {
-            src: 'barricade.js',
+            src: [
+                'test/global_state_check.js',
+                'barricade.js',
+            ],
             options: {
-                specs: 'test/barricade_Spec.js',
+                specs: [
+                    'test/core_spec.js',
+                    'test/primitive_spec.js',
+                    'test/array_spec.js',
+                    'test/immutable_object_spec.js',
+                    'test/mutable_object_spec.js',
+                    'test/mixin/observable_spec.js',
+                    'test/tag/required_spec.js',
+                    'test/tag/constraints_spec.js',
+                    'test/tag/enum_spec.js',
+                    'test/tag/ref_spec.js',
+                ],
                 keepRunner: true
             }
         }

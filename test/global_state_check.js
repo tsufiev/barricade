@@ -12,4 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-    var Array_ = Arraylike.extend({});
+var GLOBAL_COPY;
+
+function SAVE_GLOBAL_STATE() {
+    GLOBAL_COPY = {};
+    for (var key in window) {
+        GLOBAL_COPY[key] = window[key];
+    }
+}
+
+function ENSURE_GLOBAL_OBJECT_UNPOLLUTED() {
+    for (var key in window) {
+        if (!GLOBAL_COPY.hasOwnProperty(key)) {
+            throw new Error('window[' + key + '] should be undefined');
+        } else if (GLOBAL_COPY[key] !== window[key]) {
+            throw new Error('window[' + key + '] was changed');
+        }
+    }
+}

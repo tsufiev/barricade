@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-    barricade.container = barricade.base.extend({
+    var Container = Base.extend({
         create: function (json, parameters) {
-            var self = barricade.base.create.call(this, json, parameters),
+            var self = Base.create.call(this, json, parameters),
                 allDeferred = [];
 
             function attachListeners(key) {
@@ -139,7 +139,7 @@
         _getKeyClass: function (key) {
             return this._schema[key].hasOwnProperty('@class')
                 ? this._schema[key]['@class']
-                : barricade.poly(this._schema[key]);
+                : BarricadeMain.create(this._schema[key]);
         },
         _keyClassCreate: function (key, keyClass, json, parameters) {
             return this._schema[key].hasOwnProperty('@factory')
