@@ -30,11 +30,11 @@
                 }
 
                 ref = onResolve(obj);
-                isResolved = true;
 
                 if (ref === undefined) {
                     logError('Could not resolve reference');
                 } else {
+                    isResolved = true;
                     callbacks.forEach(function (callback) {
                         callback(ref);
                     });

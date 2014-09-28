@@ -37,12 +37,80 @@ describe('@ref', function () {
             }
         });
 
+        this.namespace.NeedsFluidReference = Barricade.create({
+            '@type': String,
+            '@ref': {
+                to: this.namespace.IsReferredTo,
+                needs: function () {
+                    return self.namespace.FluidParent;
+                },
+                resolver: function (json, parentObj) {
+                    self.numCalls++;
+                    return parentObj.get('b');
+                }
+            }
+        });
+
+        this.namespace.NeedsFluidReference1 = Barricade.create({
+            '@type': String,
+            '@ref': {
+                to: this.namespace.IsReferredTo,
+                needs: function () {
+                    return self.namespace.FluidParent1;
+                },
+                resolver: function (json, parentObj) {
+                    self.numCalls++;
+                    return parentObj.get('b');
+                }
+            }
+        });
+
         this.namespace.Parent = Barricade.create({
             '@type': Object,
             'a': {'@class': this.namespace.NeedsReference},
             'b': {'@class': this.namespace.IsReferredTo}
         });
-        
+
+        this.namespace.FluidParent = Barricade.create({
+            '@type': Object,
+            'b': {'@class': this.namespace.IsReferredTo},
+            'sequence': {
+                '@type': Array,
+                '*': {
+                    '@class': this.namespace.NeedsFluidReference
+                }
+            },
+            'mapping': {
+                '@type': Object,
+                '?': {
+                    '@class': this.namespace.NeedsFluidReference
+                }
+            }
+        });
+
+        this.namespace.FluidParent1 = Barricade.create({
+            '@type': Object,
+            'b': {'@class': this.namespace.IsReferredTo},
+            'sequence': {
+                '@type': Array,
+                '*': {
+                    '@type': Object,
+                    'a': {
+                        '@class': this.namespace.NeedsFluidReference1
+                    }
+                }
+            },
+            'mapping': {
+                '@type': Object,
+                '?': {
+                    '@type': Object,
+                    'a': {
+                        '@class': this.namespace.NeedsFluidReference1
+                    }
+                }
+            }
+        });
+
         this.namespace.Parent2 = Barricade.create({
             '@type': Object,
             'a': {
@@ -105,5 +173,28 @@ describe('@ref', function () {
 
         expect(instance.get('refChild').get('a').get('b').get('c').get())
             .toBe(instance.get('referredTo').get());
+    });
+
+    it('should resolve newly created objects correctly', function () {
+        var instance = this.namespace.FluidParent.create({'b': 10});
+        var instance1 = this.namespace.FluidParent1.create({'b': 10});
+        instance.get('sequence').push();
+        instance.get('mapping').push(undefined, {id: 'someKey'});
+        instance1.get('sequence').push();
+        instance1.get('mapping').push(undefined, {id: 'someKey'});
+
+        expect(this.numCalls).toBe(4);
+        expect(instance.get('sequence').get(0)).toBe(instance.get('b'));
+        expect(instance.get('mapping').get(0)).toBe(instance.get('b'));
+        // FIXME(tsufiev): somehow I wasn't able to retrieve mutable container
+        // element by its id - this seems like a bug to me, but not in the
+        // ref-related code
+//        expect(instance.get('mapping').getByID('someKey')).toBe(
+//            instance.get('b'));
+        expect(instance1.get('sequence').get(0).get('a')).toBe(
+            instance1.get('b'));
+        expect(instance1.get('mapping').get(0).get('a')).toBe(
+            instance1.get('b'));
+
     });
 });
