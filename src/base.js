@@ -106,42 +106,28 @@
                 return false;
             }
         });
-        
+
         return base.extend({
             create: function (json, parameters) {
                 var self = this.extend({}),
                     schema = self._schema,
-                    type = schema['@type'];
+                    type = schema['@type'],
+                    isUsed;
 
-                if (!parameters) {
-                    parameters = {};
-                }
+                self._parameters = parameters = parameters || {};
 
                 if (schema.hasOwnProperty('@inputMassager')) {
                     json = schema['@inputMassager'](json);
                 }
 
-                if (getType(json) !== type) {
-                    if (json) {
-                        logError("Type mismatch (json, schema)");
-                        logVal(json, schema);
-                    } else {
-                        parameters.isUsed = false;
-                    }
-
-                    // Replace bad type (does not change original)
-                    json = type();
-                }
-
-                self._data = self._sift(json, parameters);
-                self._parameters = parameters;
+                isUsed = self._setData(json);
 
                 if (schema.hasOwnProperty('@toJSON')) {
                     self.toJSON = schema['@toJSON'];
                 }
 
                 Observable.call(self);
-                Omittable.call(self, parameters.isUsed !== false);
+                Omittable.call(self, isUsed);
                 Deferrable.call(self, schema);
                 Validatable.call(self, schema);
 
@@ -154,6 +140,24 @@
                 }
 
                 return self;
+            },
+            _setData: function(json) {
+                var isUsed = true,
+                    type = this._schema['@type'];
+
+                if (getType(json) !== type) {
+                    if (json) {
+                        logError("Type mismatch (json, schema)");
+                        logVal(json, this._schema);
+                    } else {
+                        isUsed = false;
+                    }
+                    // Replace bad type (does not change original)
+                    json = type();
+                }
+                this._data = this._sift(json, this._parameters);
+
+                return isUsed;
             },
             _sift: function () {
                 throw new Error("sift() must be overridden in subclass");

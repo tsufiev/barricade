@@ -13,6 +13,12 @@
 // limitations under the License.
 
     var Omittable = Blueprint.create(function (isUsed) {
+        var defaultValue = this._schema['@default'];
+
+        if ( defaultValue ) {
+            this._setData(defaultValue);
+        }
+
         this.isUsed = function () {
             // If required, it has to be used.
             return this.isRequired() || isUsed;
