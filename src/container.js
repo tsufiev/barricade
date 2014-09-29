@@ -41,35 +41,33 @@
         },
         _attachListeners: function (key) {
             var self = this,
-                element = this.get(key);
+                element = this.get(key),
+                events = {
+                    'childChange': function (child) {
+                        self.emit('childChange', child);
+                    },
+                    'change': function () {
+                        // 'this' is set to callee, no typo
+                        events.childChange(this);
+                    },
+                    'replace': function (newValue) {
+                        self.set(key, newValue);
+                        self._tryResolveOn(newValue);
+                    },
+                    '_resolveUp': function (value) {
+                        self._tryResolveOn(value);
+                    },
+                    'removeFrom': function (container) {
+                        if (container === self) {
+                            Object.keys(events).forEach(function (eName) {
+                                element.on(eName, events[eName]);
+                            });
+                        }
+                    }
+                };
 
-            function onChildChange(child) {
-                self.emit('childChange', child);
-            }
-
-            function onDirectChildChange() {
-                onChildChange(this); // 'this' is set to callee, not typo
-            }
-
-            function onReplace(newValue) {
-                self.set(key, newValue);
-                self._tryResolveOn(newValue);
-            }
-
-            element.on('_resolveUp', function (value) {
-                self._tryResolveOn(value);
-            });
-
-            element.on('childChange', onChildChange);
-            element.on('change', onDirectChildChange);
-            element.on('replace', onReplace);
-
-            element.on('removeFrom', function (container) {
-                if (container === self) {
-                    element.off('childChange', onChildChange);
-                    element.off('change', onDirectChildChange);
-                    element.off('replace', onReplace);
-                }
+            Object.keys(events).forEach(function (eName) {
+                element.on(eName, events[eName]);
             });
         },
         set: function (key, value) {
