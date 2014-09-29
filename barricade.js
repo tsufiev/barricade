@@ -45,12 +45,6 @@ Barricade = (function () {
     });
 
     var Omittable = Blueprint.create(function (isUsed) {
-        var defaultValue = this._schema['@default'];
-
-        if ( defaultValue ) {
-            this._setData(defaultValue);
-        }
-
         this.isUsed = function () {
             // If required, it has to be used.
             return this.isRequired() || isUsed;
@@ -376,11 +370,18 @@ Barricade = (function () {
                         isUsed = false;
                     }
                     // Replace bad type (does not change original)
-                    json = type();
+                    json = this._getDefaultValue();
                 }
                 this._data = this._sift(json, this._parameters);
 
                 return isUsed;
+            },
+            _getDefaultValue: function () {
+                return this._schema.hasOwnProperty('@default')
+                    ? typeof this._schema['@default'] === 'function'
+                        ? this._schema['@default']()
+                        : this._schema['@default']
+                    : this._schema['@type']();
             },
             _sift: function () {
                 throw new Error("sift() must be overridden in subclass");
