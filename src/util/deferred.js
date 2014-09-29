@@ -50,6 +50,10 @@
             self.addCallback = function (callback) {
                 callbacks.push(callback);
             };
+
+            self.needs = function (obj) {
+                return obj.instanceof(this.getClass());
+            };
             
             return self;
         }

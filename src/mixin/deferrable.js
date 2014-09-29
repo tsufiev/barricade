@@ -29,6 +29,10 @@
             return schema.hasOwnProperty('@ref');
         }
 
+        function deferredNeedsResolving() {
+            return deferred && !deferred.isResolved();
+        }
+
         this.hasDependency = hasDependency;
 
         if (hasDependency()) {
@@ -39,4 +43,26 @@
             deferred = Deferred.create(schema['@ref'].needs,
                                                  resolver);
         }
+
+        this.resolveWith = function (obj) {
+            var allResolved = true;
+
+            if (deferredNeedsResolving()) {
+                if (deferred.needs(obj)) {
+                    this.emit('replace', deferred.resolve(obj));
+                } else {
+                    allResolved = false;
+                }
+            }
+
+            if (this.instanceof(Container)) {
+                this.each(function (index, value) {
+                    if (!value.resolveWith(obj)) {
+                        allResolved = false;
+                    }
+                });
+            }
+
+            return allResolved;
+        };
     });

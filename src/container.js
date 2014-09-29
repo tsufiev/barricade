@@ -21,131 +21,23 @@
                 self._attachListeners(key);
             }
 
-            function getOnResolve(key) {
-                return function (resolvedValue) {
-                    self.set(key, resolvedValue);
-                
-                    if (resolvedValue.hasDependency()) {
-                        allDeferred.push(resolvedValue.getDeferred());
-                    }
+            self.on('_addedElement', function (key) {
+                attachListeners(key);
+                self._tryResolveOn(self.get(key));
+            });
 
-                    if ('getAllDeferred' in resolvedValue) {
-                        allDeferred = allDeferred.concat(
-                            resolvedValue.getAllDeferred());
-                    }
-                };
-            }
-
-            function attachDeferredCallback(key, value) {
-                if (value.hasDependency()) {
-                    value.getDeferred().addCallback(getOnResolve(key));
-                }
-            }
-
-            function deferredClassMatches(deferred) {
-                return self.instanceof(deferred.getClass());
-            }
-
-            function addDeferredToList(obj) {
-                if (obj.hasDependency()) {
-                    allDeferred.push(obj.getDeferred());
-                }
-
-                if ('getAllDeferred' in obj) {
-                    allDeferred = allDeferred.concat(
-                                       obj.getAllDeferred());
-                }
-            }
-
-            function resolveDeferreds() {
-                var curDeferred,
-                    unresolvedDeferreds = [];
-
-                // New deferreds can be added to allDeferred as others are
-                // resolved. Iterating this way is safe regardless of how 
-                // new elements are added.
-                while (allDeferred.length > 0) {
-                    curDeferred = allDeferred.shift();
-
-                    if (!curDeferred.isResolved()) {
-                        if (deferredClassMatches(curDeferred)) {
-                            curDeferred.addCallback(addDeferredToList);
-                            curDeferred.resolve(self);
-                        } else {
-                            unresolvedDeferreds.push(curDeferred);
-                        }
-                    }
-                }
-
-                allDeferred = unresolvedDeferreds;
-            }
-
-            self.on('_addedElement', attachListeners);
             self.each(attachListeners);
 
-            self.on('_addedElement', function(index) {
-                var element = self.get(index);
-
-                attachDeferredCallback(index, element);
-                addDeferredToList(element);
-
-                resolveDeferreds.call(self);
-                if ( (element.instanceof(Barricade.Container) &&
-                    element.getAllDeferred().length ) ||
-                    (element.instanceof(Barricade.Primitive) &&
-                        element.hasDependency() &&
-                        !element.getDeferred().isResolved()) ) {
-                    element.emit('_resolveUp');
-                }
+            self.each(function (index, value) {
+                value.resolveWith(self);
             });
-
-            function mergeBubblingDeferreds(deferreds) {
-                var currentIds = {},
-                    bubblingDeferreds = {},
-                    id;
-                if ( deferreds && deferreds.length ) {
-                    allDeferred.forEach(function(deferred) {
-                        if (!(deferred.id in currentIds)) {
-                            currentIds[deferred.id] = true;
-                        }
-                    });
-                    deferreds.forEach(function(deferred) {
-                        if (!(deferred.id in bubblingDeferreds)) {
-                            bubblingDeferreds[deferred.id] = deferred;
-                        }
-                    });
-                    for ( id in bubblingDeferreds ) {
-                        if (!(id in currentIds)) {
-                            allDeferred.push(bubblingDeferreds[id]);
-                        }
-                    }
-                }
-            }
-
-            self.on('_resolveUp', function(deferreds) {
-                mergeBubblingDeferreds(deferreds);
-                resolveDeferreds.call(self);
-            });
-
-            self.each(function (key, value) {
-                attachDeferredCallback(key, value);
-            });
-
-            if (self.hasDependency()) {
-                allDeferred.push(self.getDeferred());
-            }
-
-            self.each(function (key, value) {
-                addDeferredToList(value);
-            });
-
-            resolveDeferreds.call(self);
-
-            self.getAllDeferred = function () {
-                return allDeferred;
-            };
 
             return self;
+        },
+        _tryResolveOn: function (value) {
+            if (!value.resolveWith(this)) {
+                this.emit('_resolveUp', value);
+            }
         },
         _attachListeners: function (key) {
             var self = this,
@@ -161,15 +53,11 @@
 
             function onReplace(newValue) {
                 self.set(key, newValue);
+                self._tryResolveOn(newValue);
             }
 
-            element.on('_resolveUp', function() {
-                if ( element.instanceof(Barricade.Container) ) {
-                    self.emit('_resolveUp', element.getAllDeferred());
-                } else {
-                    self.emit('_resolveUp', [element.getDeferred()]);
-                }
-
+            element.on('_resolveUp', function (value) {
+                self._tryResolveOn(value);
             });
 
             element.on('childChange', onChildChange);
