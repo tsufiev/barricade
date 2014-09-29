@@ -72,29 +72,14 @@ Barricade = (function () {
             return ref;
         }
 
-        function hasDependency() {
-            return schema.hasOwnProperty('@ref');
-        }
-
-        function deferredNeedsResolving() {
-            return deferred && !deferred.isResolved();
-        }
-
-        this.hasDependency = hasDependency;
-
-        if (hasDependency()) {
-            this.getDeferred = function () {
-                return deferred;
-            };
-
-            deferred = Deferred.create(schema['@ref'].needs,
-                                                 resolver);
+        if (schema.hasOwnProperty('@ref')) {
+            deferred = Deferred.create(schema['@ref'].needs, resolver);
         }
 
         this.resolveWith = function (obj) {
             var allResolved = true;
 
-            if (deferredNeedsResolving()) {
+            if (deferred && !deferred.isResolved()) {
                 if (deferred.needs(obj)) {
                     this.emit('replace', deferred.resolve(obj));
                 } else {
@@ -216,48 +201,31 @@ Barricade = (function () {
 
     var Deferred = {
         create: function (classGetter, onResolve) {
-            var self = Object.create(this),
-                callbacks = [],
-                isResolved = false;
-
-            self.getClass = function () {
-                return classGetter();
-            };
-
-            self.resolve = function (obj) {
-                var ref;
-
-                if (isResolved) {
-                    throw new Error('Deferred already resolved');
-                }
-
-                ref = onResolve(obj);
-
-                if (ref === undefined) {
-                    logError('Could not resolve reference');
-                } else {
-                    isResolved = true;
-                    callbacks.forEach(function (callback) {
-                        callback(ref);
-                    });
-                }
-
-                return ref;
-            };
-
-            self.isResolved = function () {
-                return isResolved;
-            };
-
-            self.addCallback = function (callback) {
-                callbacks.push(callback);
-            };
-
-            self.needs = function (obj) {
-                return obj.instanceof(this.getClass());
-            };
-            
+            var self = Object.create(this);
+            self._isResolved = false;
+            self._classGetter = classGetter;
+            self._onResolve = onResolve;
             return self;
+        },
+        resolve: function (obj) {
+            var ref;
+
+            if (this._isResolved) {
+                throw new Error('Deferred already resolved');
+            }
+
+            ref = this._onResolve(obj);
+
+            if (ref !== undefined) {
+                this._isResolved = true;
+                return ref;
+            }
+        },
+        isResolved: function () {
+            return this._isResolved;
+        },
+        needs: function (obj) {
+            return obj.instanceof(this._classGetter());
         }
     };
 
@@ -482,11 +450,6 @@ Barricade = (function () {
                 element.on(eName, events[eName]);
             });
         },
-        set: function (key, value) {
-            this.get(key).emit('removeFrom', this);
-            this._doSet(key, value);
-            this._attachListeners(key);
-        },
         _getKeyClass: function (key) {
             return this._schema[key].hasOwnProperty('@class')
                 ? this._schema[key]['@class']
@@ -513,6 +476,11 @@ Barricade = (function () {
 
             return this._safeInstanceof(instance, class_) ||
                 (class_._schema.hasOwnProperty('@ref') && isRefTo());
+        },
+        set: function (key, value) {
+            this.get(key).emit('removeFrom', this);
+            this._doSet(key, value);
+            this._attachListeners(key);
         }
     });
 

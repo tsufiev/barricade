@@ -25,29 +25,14 @@
             return ref;
         }
 
-        function hasDependency() {
-            return schema.hasOwnProperty('@ref');
-        }
-
-        function deferredNeedsResolving() {
-            return deferred && !deferred.isResolved();
-        }
-
-        this.hasDependency = hasDependency;
-
-        if (hasDependency()) {
-            this.getDeferred = function () {
-                return deferred;
-            };
-
-            deferred = Deferred.create(schema['@ref'].needs,
-                                                 resolver);
+        if (schema.hasOwnProperty('@ref')) {
+            deferred = Deferred.create(schema['@ref'].needs, resolver);
         }
 
         this.resolveWith = function (obj) {
             var allResolved = true;
 
-            if (deferredNeedsResolving()) {
+            if (deferred && !deferred.isResolved()) {
                 if (deferred.needs(obj)) {
                     this.emit('replace', deferred.resolve(obj));
                 } else {

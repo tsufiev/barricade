@@ -70,11 +70,6 @@
                 element.on(eName, events[eName]);
             });
         },
-        set: function (key, value) {
-            this.get(key).emit('removeFrom', this);
-            this._doSet(key, value);
-            this._attachListeners(key);
-        },
         _getKeyClass: function (key) {
             return this._schema[key].hasOwnProperty('@class')
                 ? this._schema[key]['@class']
@@ -101,5 +96,10 @@
 
             return this._safeInstanceof(instance, class_) ||
                 (class_._schema.hasOwnProperty('@ref') && isRefTo());
+        },
+        set: function (key, value) {
+            this.get(key).emit('removeFrom', this);
+            this._doSet(key, value);
+            this._attachListeners(key);
         }
     });
