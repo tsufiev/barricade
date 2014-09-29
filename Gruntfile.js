@@ -123,6 +123,7 @@ module.exports = function (grunt) {
                     'test/tag/constraints_spec.js',
                     'test/tag/enum_spec.js',
                     'test/tag/ref_spec.js',
+                    'test/tag/default_spec.js',
                 ],
                 keepRunner: true
             }
