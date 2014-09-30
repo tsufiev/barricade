@@ -38,6 +38,8 @@ module.exports = function (grunt) {
                 src: [
                     'src/intro.js',
                     'src/util/blueprint.js',
+                    'src/mixin/extendable.js',
+                    'src/mixin/instanceof.js',
                     'src/mixin/identifiable.js',
                     'src/mixin/omittable.js',
                     'src/mixin/deferrable.js',

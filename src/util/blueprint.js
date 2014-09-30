@@ -23,7 +23,7 @@
                             });
                         }
 
-                        f.apply(this, arguments);
+                        return f.apply(this, arguments);
                     };
 
                 return g;

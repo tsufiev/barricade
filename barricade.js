@@ -26,12 +26,108 @@ Barricade = (function () {
                             });
                         }
 
-                        f.apply(this, arguments);
+                        return f.apply(this, arguments);
                     };
 
                 return g;
             }
     };
+
+    var Extendable = Blueprint.create(function () {
+        function forInKeys(obj) {
+            var key,
+                keys = [];
+
+            for (key in obj) {
+                keys.push(key);
+            }
+
+            return keys;
+        }
+
+        function isPlainObject(obj) {
+            return getType(obj) === Object &&
+                Object.getPrototypeOf(Object.getPrototypeOf(obj)) === null;
+        }
+
+        function extend(extension) {
+            function addProperty(object, prop) {
+                return Object.defineProperty(object, prop, {
+                    enumerable: true,
+                    writable: true,
+                    configurable: true,
+                    value: extension[prop]
+                });
+            }
+
+            // add properties to extended object
+            return Object.keys(extension).reduce(addProperty,
+                                                 Object.create(this));
+        }
+
+        function deepClone(object) {
+            if (isPlainObject(object)) {
+                return forInKeys(object).reduce(function (clone, key) {
+                    clone[key] = deepClone(object[key]);
+                    return clone;
+                }, {});
+            }
+            return object;
+        }
+
+        function merge(target, source) {
+            forInKeys(source).forEach(function (key) {
+                if (target.hasOwnProperty(key) &&
+                        isPlainObject(target[key]) &&
+                        isPlainObject(source[key])) {
+                    merge(target[key], source[key]);
+                } else {
+                    target[key] = deepClone(source[key]);
+                }
+            });
+        }
+
+        return Object.defineProperty(this, 'extend', {
+            enumerable: false,
+            writable: false,
+            value: function (extension, schema) {
+                if (schema) {
+                    extension._schema = '_schema' in this ?
+                                            deepClone(this._schema) : {};
+                    merge(extension._schema, schema);
+                }
+
+                return extend.call(this, extension);
+            }
+        });
+    });
+
+    var InstanceofMixin = Blueprint.create(function () {
+        return Object.defineProperty(this, 'instanceof', {
+            enumerable: false,
+            value: function (proto) {
+                var _instanceof = this.instanceof,
+                    subject = this;
+
+                function hasMixin(obj, mixin) {
+                    return obj.hasOwnProperty('_parents') &&
+                        obj._parents.some(function (_parent) {
+                            return _instanceof.call(_parent, mixin);
+                        });
+                }
+
+                do {
+                    if (subject === proto ||
+                            hasMixin(subject, proto)) {
+                        return true;
+                    }
+                    subject = Object.getPrototypeOf(subject);
+                } while (subject);
+
+                return false;
+            }
+        });
+    });
 
     var Identifiable = Blueprint.create(function (id) {
         this.getID = function () {
@@ -229,179 +325,83 @@ Barricade = (function () {
         }
     };
 
-    var Base = (function () {
-        var base = {};
+    var Base = Extendable.call(InstanceofMixin.call({
+        create: function (json, parameters) {
+            var self = this.extend({}),
+                schema = self._schema,
+                type = schema['@type'],
+                isUsed;
 
-        function forInKeys(obj) {
-            var key,
-                keys = [];
+            self._parameters = parameters = parameters || {};
 
-            for (key in obj) {
-                keys.push(key);
+            if (schema.hasOwnProperty('@inputMassager')) {
+                json = schema['@inputMassager'](json);
             }
 
-            return keys;
-        }
+            isUsed = self._setData(json);
 
-        function isPlainObject(obj) {
-            return getType(obj) === Object &&
-                Object.getPrototypeOf(Object.getPrototypeOf(obj)) === null;
-        }
-
-        function extend(extension) {
-            function addProperty(object, prop) {
-                return Object.defineProperty(object, prop, {
-                    enumerable: true,
-                    writable: true,
-                    configurable: true,
-                    value: extension[prop]
-                });
+            if (schema.hasOwnProperty('@toJSON')) {
+                self.toJSON = schema['@toJSON'];
             }
 
-            // add properties to extended object
-            return Object.keys(extension).reduce(addProperty,
-                                                 Object.create(this));
-        }
+            Observable.call(self);
+            Omittable.call(self, isUsed);
+            Deferrable.call(self, schema);
+            Validatable.call(self, schema);
 
-        function deepClone(object) {
-            if (isPlainObject(object)) {
-                return forInKeys(object).reduce(function (clone, key) {
-                    clone[key] = deepClone(object[key]);
-                    return clone;
-                }, {});
+            if (schema.hasOwnProperty('@enum')) {
+                Enumerated.call(self, schema['@enum']);
             }
-            return object;
-        }
 
-        function merge(target, source) {
-            forInKeys(source).forEach(function (key) {
-                if (target.hasOwnProperty(key) &&
-                        isPlainObject(target[key]) &&
-                        isPlainObject(source[key])) {
-                    merge(target[key], source[key]);
+            if (parameters.hasOwnProperty('id')) {
+                Identifiable.call(self, parameters.id);
+            }
+
+            return self;
+        },
+        _setData: function(json) {
+            var isUsed = true,
+                type = this._schema['@type'];
+
+            if (getType(json) !== type) {
+                if (json) {
+                    logError("Type mismatch (json, schema)");
+                    logVal(json, this._schema);
                 } else {
-                    target[key] = deepClone(source[key]);
+                    isUsed = false;
                 }
-            });
+                // Replace bad type (does not change original)
+                json = this._getDefaultValue();
+            }
+            this._data = this._sift(json, this._parameters);
+
+            return isUsed;
+        },
+        _getDefaultValue: function () {
+            return this._schema.hasOwnProperty('@default')
+                ? typeof this._schema['@default'] === 'function'
+                    ? this._schema['@default']()
+                    : this._schema['@default']
+                : this._schema['@type']();
+        },
+        _sift: function () {
+            throw new Error("sift() must be overridden in subclass");
+        },
+        _safeInstanceof: function (instance, class_) {
+            return typeof instance === 'object' &&
+                ('instanceof' in instance) &&
+                instance.instanceof(class_);
+        },
+        getPrimitiveType: function () {
+            return this._schema['@type'];
+        },
+        isRequired: function () {
+            return this._schema['@required'] !== false;
+        },
+        isEmpty: function () {
+            throw new Error('Subclass should override isEmpty()');
         }
-
-        Object.defineProperty(base, 'extend', {
-            enumerable: false,
-            writable: false,
-            value: function (extension, schema) {
-                if (schema) {
-                    extension._schema = '_schema' in this ?
-                                            deepClone(this._schema) : {};
-                    merge(extension._schema, schema);
-                }
-                
-                return extend.call(this, extension);
-            }
-        });
-
-        Object.defineProperty(base, 'instanceof', {
-            enumerable: false,
-            value: function (proto) {
-                var _instanceof = this.instanceof,
-                    subject = this;
-
-                function hasMixin(obj, mixin) {
-                    return obj.hasOwnProperty('_parents') &&
-                        obj._parents.some(function (_parent) {
-                            return _instanceof.call(_parent, mixin);
-                        });
-                }
-
-                do {
-                    if (subject === proto ||
-                            hasMixin(subject, proto)) {
-                        return true;
-                    }
-                    subject = Object.getPrototypeOf(subject);
-                } while (subject);
-
-                return false;
-            }
-        });
-
-        return base.extend({
-            create: function (json, parameters) {
-                var self = this.extend({}),
-                    schema = self._schema,
-                    type = schema['@type'],
-                    isUsed;
-
-                self._parameters = parameters = parameters || {};
-
-                if (schema.hasOwnProperty('@inputMassager')) {
-                    json = schema['@inputMassager'](json);
-                }
-
-                isUsed = self._setData(json);
-
-                if (schema.hasOwnProperty('@toJSON')) {
-                    self.toJSON = schema['@toJSON'];
-                }
-
-                Observable.call(self);
-                Omittable.call(self, isUsed);
-                Deferrable.call(self, schema);
-                Validatable.call(self, schema);
-
-                if (schema.hasOwnProperty('@enum')) {
-                    Enumerated.call(self, schema['@enum']);
-                }
-
-                if (parameters.hasOwnProperty('id')) {
-                    Identifiable.call(self, parameters.id);
-                }
-
-                return self;
-            },
-            _setData: function(json) {
-                var isUsed = true,
-                    type = this._schema['@type'];
-
-                if (getType(json) !== type) {
-                    if (json) {
-                        logError("Type mismatch (json, schema)");
-                        logVal(json, this._schema);
-                    } else {
-                        isUsed = false;
-                    }
-                    // Replace bad type (does not change original)
-                    json = this._getDefaultValue();
-                }
-                this._data = this._sift(json, this._parameters);
-
-                return isUsed;
-            },
-            _getDefaultValue: function () {
-                return this._schema.hasOwnProperty('@default')
-                    ? typeof this._schema['@default'] === 'function'
-                        ? this._schema['@default']()
-                        : this._schema['@default']
-                    : this._schema['@type']();
-            },
-            _sift: function () {
-                throw new Error("sift() must be overridden in subclass");
-            },
-            _safeInstanceof: function (instance, class_) {
-                return typeof instance === 'object' &&
-                    ('instanceof' in instance) &&
-                    instance.instanceof(class_);
-            },
-            getPrimitiveType: function () {
-                return this._schema['@type'];
-            },
-            isRequired: function () {
-                return this._schema['@required'] !== false;
-            },
-            isEmpty: function () {
-                throw new Error('Subclass should override isEmpty()');
-            }
-        });
-    }());
+    }));
 
     var Container = Base.extend({
         create: function (json, parameters) {
