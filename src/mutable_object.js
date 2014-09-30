@@ -50,8 +50,9 @@
             }, {});
         },
         push: function (newJson, newParameters) {
-            if (getType(newParameters) !== Object ||
-                    !newParameters.hasOwnProperty('id')) {
+            if (!this._safeInstanceof(newJson, this._elementClass) &&
+                    (getType(newParameters) !== Object ||
+                    !newParameters.hasOwnProperty('id'))) {
                 logError('ID should be passed in ' + 
                           'with parameters object');
             } else {

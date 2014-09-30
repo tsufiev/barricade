@@ -76,6 +76,13 @@ describe('Mutable Objects', function () {
         expect(this.instance.get(3).get()).toBe('new value');
     });
 
+    it('.push() should take existing elements without needing id', function () {
+        this.instance.push(this.instance.get(2));
+
+        expect(this.instance.length()).toBe(4);
+        expect(this.instance.get(3)).toBe(this.instance.get(2));
+    });
+
     it('.toJSON() should return JSON blob', function () {
         expect(this.instance.toJSON()).toEqual({
             foo: "abcd",
