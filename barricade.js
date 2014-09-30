@@ -667,11 +667,11 @@ Barricade = (function () {
                 return value.getID();
             });
         },
+        getPosByID: function (id) {
+            return this.getIDs().indexOf(id);
+        },
         getByID: function (id) {
-            var pos = this.toArray().map(function (value) {
-                    return value.getID();
-                }).indexOf(id);
-            return this.get(pos);
+            return this.get(this.getPosByID(id));
         },
         contains: function (element) {
             return this.toArray().some(function (value) {
