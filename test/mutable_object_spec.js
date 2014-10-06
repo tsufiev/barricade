@@ -69,6 +69,18 @@ describe('Mutable Objects', function () {
         expect(this.instance.getIDs()).toEqual(['foo', 'bar', 'baz']);
     });
 
+    it('.getPosByID() should return index of element with ID', function () {
+        expect(this.instance.getPosByID('foo')).toBe(0);
+        expect(this.instance.getPosByID('bar')).toBe(1);
+        expect(this.instance.getPosByID('baz')).toBe(2);
+    });
+
+    it('.getByID() should return element with that ID', function () {
+        expect(this.instance.getByID('foo').getID()).toBe('foo');
+        expect(this.instance.getByID('bar').getID()).toBe('bar');
+        expect(this.instance.getByID('baz').getID()).toBe('baz');
+    });
+
     it('.push() should add element with JSON and ID', function () {
         this.instance.push('new value', {id: 'new id'});
 
