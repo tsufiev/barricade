@@ -12,10 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-    var Container = Base.extend({
+    Container = Base.extend({
         create: function (json, parameters) {
-            var self = Base.create.call(this, json, parameters),
-                allDeferred = [];
+            var self = Base.create.call(this, json, parameters);
 
             function attachListeners(key) {
                 self._attachListeners(key);

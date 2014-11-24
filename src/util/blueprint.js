@@ -12,20 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-    var Blueprint = {
-            create: function (f) {
-                var g = function () {
-                        if (this.hasOwnProperty('_parents')) {
-                            this._parents.push(g);
-                        } else {
-                            Object.defineProperty(this, '_parents', {
-                                value: [g]
-                            });
-                        }
+    Blueprint = {
+        create: function (f) {
+            var g = function () {
+                    if (this.hasOwnProperty('_parents')) {
+                        this._parents.push(g);
+                    } else {
+                        Object.defineProperty(this, '_parents', {
+                            value: [g]
+                        });
+                    }
 
-                        return f.apply(this, arguments);
-                    };
+                    return f.apply(this, arguments);
+                };
 
-                return g;
-            }
+            return g;
+        }
     };

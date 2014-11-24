@@ -12,11 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-    var Base = Extendable.call(InstanceofMixin.call({
+    Base = Extendable.call(InstanceofMixin.call({
         create: function (json, parameters) {
             var self = this.extend({}),
                 schema = self._schema,
-                type = schema['@type'],
                 isUsed;
 
             self._parameters = parameters = parameters || {};

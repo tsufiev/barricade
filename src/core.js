@@ -43,43 +43,42 @@
         }
     }
 
-    var BarricadeMain = {};
+    BarricadeMain = {
+        'Array': Array_,
+        'Arraylike': Arraylike,
+        'Base': Base,
+        'Blueprint': Blueprint,
+        'Container': Container,
+        'Deferrable': Deferrable,
+        'Enumerated': Enumerated,
+        'getType': getType, // Very helpful function
+        'Identifiable': Identifiable,
+        'ImmutableObject': ImmutableObject,
+        'MutableObject': MutableObject,
+        'Observable': Observable,
+        'Omittable': Omittable,
+        'Primitive': Primitive,
+        'create': function (schema) {
+            function schemaIsMutable() {
+                return schema.hasOwnProperty('?');
+            }
 
-    BarricadeMain.create = function (schema) {
-        function schemaIsMutable() {
-            return schema.hasOwnProperty('?');
-        }
+            function schemaIsImmutable() {
+                return Object.keys(schema).some(function (key) {
+                    return key.charAt(0) !== '@' && key !== '?';
+                });
+            }
 
-        function schemaIsImmutable() {
-            return Object.keys(schema).some(function (key) {
-                return key.charAt(0) !== '@' && key !== '?';
-            });
-        }
-
-        if (schema['@type'] === Object && schemaIsImmutable()) {
-            return ImmutableObject.extend({_schema: schema});
-        } else if (schema['@type'] === Object && schemaIsMutable()) {
-            return MutableObject.extend({_schema: schema});
-        } else if (schema['@type'] === Array && schema.hasOwnProperty('*')) {
-            return Array_.extend({_schema: schema});
-        } else {
-            return Primitive.extend({_schema: schema});
+            if (schema['@type'] === Object && schemaIsImmutable()) {
+                return ImmutableObject.extend({_schema: schema});
+            } else if (schema['@type'] === Object && schemaIsMutable()) {
+                return MutableObject.extend({_schema: schema});
+            } else if (schema['@type'] === Array && '*' in schema) {
+                return Array_.extend({_schema: schema});
+            } else {
+                return Primitive.extend({_schema: schema});
+            }
         }
     };
-
-    BarricadeMain.getType = getType; // Very helpful function
-
-    BarricadeMain.Base = Base;
-    BarricadeMain.Container = Container;
-    BarricadeMain.Array = Array_;
-    BarricadeMain.ImmutableObject = ImmutableObject;
-    BarricadeMain.MutableObject = MutableObject;
-    BarricadeMain.Primitive = Primitive;
-    BarricadeMain.Blueprint = Blueprint;
-    BarricadeMain.Observable = Observable;
-    BarricadeMain.Deferrable = Deferrable;
-    BarricadeMain.Omittable = Omittable;
-    BarricadeMain.Identifiable = Identifiable;
-    BarricadeMain.Enumerated = Enumerated;
 
     return BarricadeMain;

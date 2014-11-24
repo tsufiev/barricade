@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-    var Primitive = Base.extend({
-        _sift: function (json, parameters) {
+    Primitive = Base.extend({
+        _sift: function (json) {
             return json;
         },
         get: function () {

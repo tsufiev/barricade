@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-    var Arraylike = Container.extend({
+    Arraylike = Container.extend({
         create: function (json, parameters) {
             if (!this.hasOwnProperty('_elementClass')) {
                 Object.defineProperty(this, '_elementClass', {
@@ -25,7 +25,7 @@
             return Container.create.call(this, json, parameters);
         },
         _elSymbol: '*',
-        _sift: function (json, parameters) {
+        _sift: function (json) {
             return json.map(function (el) {
                 return this._keyClassCreate(this._elSymbol,
                                               this._elementClass, el);

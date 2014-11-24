@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-    var Identifiable = Blueprint.create(function (id) {
+    Identifiable = Blueprint.create(function (id) {
         this.getID = function () {
             return id;
         };

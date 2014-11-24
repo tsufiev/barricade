@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-    var ImmutableObject = Container.extend({
+    ImmutableObject = Container.extend({
         create: function (json, parameters) {
             var self = this;
             if (!this.hasOwnProperty('_keyClasses')) {
@@ -28,7 +28,7 @@
 
             return Container.create.call(this, json, parameters);
         },
-        _sift: function (json, parameters) {
+        _sift: function (json) {
             var self = this;
             return this.getKeys().reduce(function (objOut, key) {
                 objOut[key] = self._keyClassCreate(
@@ -54,8 +54,8 @@
 
                 this.emit('change', 'set', key, this._data[key], oldVal);
             } else {
-                console.error('object does not have key (key, schema)');
-                console.log(key, this._schema);
+                logError('object does not have key (key, schema)');
+                logVal(key, this._schema);
             }
         },
         each: function (functionIn, comparatorIn) {

@@ -12,28 +12,33 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-Barricade = (function () {
+var Barricade = (function () {
     "use strict";
 
-    var Blueprint = {
-            create: function (f) {
-                var g = function () {
-                        if (this.hasOwnProperty('_parents')) {
-                            this._parents.push(g);
-                        } else {
-                            Object.defineProperty(this, '_parents', {
-                                value: [g]
-                            });
-                        }
+    var Array_, Arraylike, BarricadeMain, Base, Blueprint, Container,
+        Deferrable, Deferred, Enumerated, Extendable, Identifiable,
+        ImmutableObject, InstanceofMixin, MutableObject, Observable, Omittable,
+        Primitive, Validatable;
 
-                        return f.apply(this, arguments);
-                    };
+    Blueprint = {
+        create: function (f) {
+            var g = function () {
+                    if (this.hasOwnProperty('_parents')) {
+                        this._parents.push(g);
+                    } else {
+                        Object.defineProperty(this, '_parents', {
+                            value: [g]
+                        });
+                    }
 
-                return g;
-            }
+                    return f.apply(this, arguments);
+                };
+
+            return g;
+        }
     };
 
-    var Extendable = Blueprint.create(function () {
+    Extendable = Blueprint.create(function () {
         function forInKeys(obj) {
             var key,
                 keys = [];
@@ -102,7 +107,7 @@ Barricade = (function () {
         });
     });
 
-    var InstanceofMixin = Blueprint.create(function () {
+    InstanceofMixin = Blueprint.create(function () {
         return Object.defineProperty(this, 'instanceof', {
             enumerable: false,
             value: function (proto) {
@@ -129,7 +134,7 @@ Barricade = (function () {
         });
     });
 
-    var Identifiable = Blueprint.create(function (id) {
+    Identifiable = Blueprint.create(function (id) {
         this.getID = function () {
             return id;
         };
@@ -140,7 +145,7 @@ Barricade = (function () {
         };
     });
 
-    var Omittable = Blueprint.create(function (isUsed) {
+    Omittable = Blueprint.create(function (isUsed) {
         this.isUsed = function () {
             // If required, it has to be used.
             return this.isRequired() || isUsed;
@@ -155,7 +160,7 @@ Barricade = (function () {
         });
     });
 
-    var Deferrable = Blueprint.create(function (schema) {
+    Deferrable = Blueprint.create(function (schema) {
         var self = this,
             deferred;
 
@@ -195,7 +200,7 @@ Barricade = (function () {
         };
     });
 
-    var Validatable = Blueprint.create(function (schema) {
+    Validatable = Blueprint.create(function (schema) {
         var constraints = schema['@constraints'],
             error = null;
 
@@ -224,7 +229,7 @@ Barricade = (function () {
         };
     });
 
-    var Enumerated = Blueprint.create(function(enum_) {
+    Enumerated = Blueprint.create(function(enum_) {
         var self = this;
 
         function getEnum() {
@@ -255,7 +260,7 @@ Barricade = (function () {
         });
     });
 
-    var Observable = Blueprint.create(function () {
+    Observable = Blueprint.create(function () {
         var events = {};
 
         function hasEvent(eventName) {
@@ -295,7 +300,7 @@ Barricade = (function () {
         };
     });
 
-    var Deferred = {
+    Deferred = {
         create: function (classGetter, onResolve) {
             var self = Object.create(this);
             self._isResolved = false;
@@ -325,11 +330,10 @@ Barricade = (function () {
         }
     };
 
-    var Base = Extendable.call(InstanceofMixin.call({
+    Base = Extendable.call(InstanceofMixin.call({
         create: function (json, parameters) {
             var self = this.extend({}),
                 schema = self._schema,
-                type = schema['@type'],
                 isUsed;
 
             self._parameters = parameters = parameters || {};
@@ -403,10 +407,9 @@ Barricade = (function () {
         }
     }));
 
-    var Container = Base.extend({
+    Container = Base.extend({
         create: function (json, parameters) {
-            var self = Base.create.call(this, json, parameters),
-                allDeferred = [];
+            var self = Base.create.call(this, json, parameters);
 
             function attachListeners(key) {
                 self._attachListeners(key);
@@ -495,7 +498,7 @@ Barricade = (function () {
         }
     });
 
-    var Arraylike = Container.extend({
+    Arraylike = Container.extend({
         create: function (json, parameters) {
             if (!this.hasOwnProperty('_elementClass')) {
                 Object.defineProperty(this, '_elementClass', {
@@ -508,7 +511,7 @@ Barricade = (function () {
             return Container.create.call(this, json, parameters);
         },
         _elSymbol: '*',
-        _sift: function (json, parameters) {
+        _sift: function (json) {
             return json.map(function (el) {
                 return this._keyClassCreate(this._elSymbol,
                                               this._elementClass, el);
@@ -574,9 +577,9 @@ Barricade = (function () {
         }
     });
 
-    var Array_ = Arraylike.extend({});
+    Array_ = Arraylike.extend({});
 
-    var ImmutableObject = Container.extend({
+    ImmutableObject = Container.extend({
         create: function (json, parameters) {
             var self = this;
             if (!this.hasOwnProperty('_keyClasses')) {
@@ -592,7 +595,7 @@ Barricade = (function () {
 
             return Container.create.call(this, json, parameters);
         },
-        _sift: function (json, parameters) {
+        _sift: function (json) {
             var self = this;
             return this.getKeys().reduce(function (objOut, key) {
                 objOut[key] = self._keyClassCreate(
@@ -618,8 +621,8 @@ Barricade = (function () {
 
                 this.emit('change', 'set', key, this._data[key], oldVal);
             } else {
-                console.error('object does not have key (key, schema)');
-                console.log(key, this._schema);
+                logError('object does not have key (key, schema)');
+                logVal(key, this._schema);
             }
         },
         each: function (functionIn, comparatorIn) {
@@ -653,9 +656,9 @@ Barricade = (function () {
         }
     });
 
-    var MutableObject = Arraylike.extend({
+    MutableObject = Arraylike.extend({
         _elSymbol: '?',
-        _sift: function (json, parameters) {
+        _sift: function (json) {
             return Object.keys(json).map(function (key) {
                 return this._keyClassCreate(
                                    this._elSymbol, this._elementClass,
@@ -697,13 +700,13 @@ Barricade = (function () {
                 logError('ID should be passed in ' + 
                           'with parameters object');
             } else {
-                Array_.push.call(this, newJson, newParameters);
+                Arraylike.push.call(this, newJson, newParameters);
             }
         },
     });
 
-    var Primitive = Base.extend({
-        _sift: function (json, parameters) {
+    Primitive = Base.extend({
+        _sift: function (json) {
             return json;
         },
         get: function () {
@@ -773,44 +776,43 @@ Barricade = (function () {
         }
     }
 
-    var BarricadeMain = {};
+    BarricadeMain = {
+        'Array': Array_,
+        'Arraylike': Arraylike,
+        'Base': Base,
+        'Blueprint': Blueprint,
+        'Container': Container,
+        'Deferrable': Deferrable,
+        'Enumerated': Enumerated,
+        'getType': getType, // Very helpful function
+        'Identifiable': Identifiable,
+        'ImmutableObject': ImmutableObject,
+        'MutableObject': MutableObject,
+        'Observable': Observable,
+        'Omittable': Omittable,
+        'Primitive': Primitive,
+        'create': function (schema) {
+            function schemaIsMutable() {
+                return schema.hasOwnProperty('?');
+            }
 
-    BarricadeMain.create = function (schema) {
-        function schemaIsMutable() {
-            return schema.hasOwnProperty('?');
-        }
+            function schemaIsImmutable() {
+                return Object.keys(schema).some(function (key) {
+                    return key.charAt(0) !== '@' && key !== '?';
+                });
+            }
 
-        function schemaIsImmutable() {
-            return Object.keys(schema).some(function (key) {
-                return key.charAt(0) !== '@' && key !== '?';
-            });
-        }
-
-        if (schema['@type'] === Object && schemaIsImmutable()) {
-            return ImmutableObject.extend({_schema: schema});
-        } else if (schema['@type'] === Object && schemaIsMutable()) {
-            return MutableObject.extend({_schema: schema});
-        } else if (schema['@type'] === Array && schema.hasOwnProperty('*')) {
-            return Array_.extend({_schema: schema});
-        } else {
-            return Primitive.extend({_schema: schema});
+            if (schema['@type'] === Object && schemaIsImmutable()) {
+                return ImmutableObject.extend({_schema: schema});
+            } else if (schema['@type'] === Object && schemaIsMutable()) {
+                return MutableObject.extend({_schema: schema});
+            } else if (schema['@type'] === Array && '*' in schema) {
+                return Array_.extend({_schema: schema});
+            } else {
+                return Primitive.extend({_schema: schema});
+            }
         }
     };
-
-    BarricadeMain.getType = getType; // Very helpful function
-
-    BarricadeMain.Base = Base;
-    BarricadeMain.Container = Container;
-    BarricadeMain.Array = Array_;
-    BarricadeMain.ImmutableObject = ImmutableObject;
-    BarricadeMain.MutableObject = MutableObject;
-    BarricadeMain.Primitive = Primitive;
-    BarricadeMain.Blueprint = Blueprint;
-    BarricadeMain.Observable = Observable;
-    BarricadeMain.Deferrable = Deferrable;
-    BarricadeMain.Omittable = Omittable;
-    BarricadeMain.Identifiable = Identifiable;
-    BarricadeMain.Enumerated = Enumerated;
 
     return BarricadeMain;
 

@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-    var MutableObject = Arraylike.extend({
+    MutableObject = Arraylike.extend({
         _elSymbol: '?',
-        _sift: function (json, parameters) {
+        _sift: function (json) {
             return Object.keys(json).map(function (key) {
                 return this._keyClassCreate(
                                    this._elSymbol, this._elementClass,
@@ -56,7 +56,7 @@
                 logError('ID should be passed in ' + 
                           'with parameters object');
             } else {
-                Array_.push.call(this, newJson, newParameters);
+                Arraylike.push.call(this, newJson, newParameters);
             }
         },
     });

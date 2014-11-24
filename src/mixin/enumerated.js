@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-    var Enumerated = Blueprint.create(function(enum_) {
+    Enumerated = Blueprint.create(function(enum_) {
         var self = this;
 
         function getEnum() {
