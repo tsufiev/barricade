@@ -59,7 +59,7 @@
                     'removeFrom': function (container) {
                         if (container === self) {
                             Object.keys(events).forEach(function (eName) {
-                                element.on(eName, events[eName]);
+                                element.off(eName, events[eName]);
                             });
                         }
                     }

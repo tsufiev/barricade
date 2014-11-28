@@ -73,6 +73,20 @@ describe('Observable', function () {
             expect(this.calls.change).toBe(4);
         });
 
+        it('remove() removes element\'s container listeners', function () {
+            var element = this.instance.get(0);
+
+            this.instance.on('childChange',
+                             getCallback('childChange', this.calls));
+
+            expect(this.calls.childChange).toBe(0);
+            element.set('aa');
+            expect(this.calls.childChange).toBe(1);
+            this.instance.remove(0);
+            element.set('aa');
+            expect(this.calls.childChange).toBe(1);
+        });
+
         it('added elements should have listeners as well', function () {
             this.instance.on('childChange',
                              getCallback('childChange', this.calls));
