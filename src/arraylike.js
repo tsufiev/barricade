@@ -28,7 +28,7 @@
         _sift: function (json) {
             return json.map(function (el) {
                 return this._keyClassCreate(this._elSymbol,
-                                              this._elementClass, el);
+                                            this._elementClass, el);
             }, this);
         }, 
         get: function (index) {
@@ -51,13 +51,10 @@
         _doSet: function (index, newVal, newParameters) {
             var oldVal = this._data[index];
 
-            if (this._isCorrectType(newVal, this._elementClass)) {
-                this._data[index] = newVal;
-            } else {
-                this._data[index] = this._keyClassCreate(
-                                  this._elSymbol, this._elementClass,
-                                  newVal, newParameters);
-            }
+            this._data[index] = this._isCorrectType(newVal, this._elementClass)
+                ? this._data[index] = newVal
+                : this._keyClassCreate(this._elSymbol, this._elementClass,
+                                       newVal, newParameters);
 
             this.emit('change', 'set', index, this._data[index], oldVal);
         },
@@ -73,13 +70,11 @@
             });
         },
         push: function (newValue, newParameters) {
-            if (this._isCorrectType(newValue, this._elementClass)) {
-                this._data.push(newValue);
-            } else {
-                this._data.push(this._keyClassCreate(
-                              this._elSymbol, this._elementClass,
-                              newValue, newParameters));
-            }
+            this._data.push(
+                this._isCorrectType(newValue, this._elementClass)
+                    ? newValue
+                    : this._keyClassCreate(this._elSymbol, this._elementClass,
+                                           newValue, newParameters));
 
             this.emit('_addedElement', this._data.length - 1);
             this.emit('change', 'add', this._data.length - 1);

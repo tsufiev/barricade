@@ -16,9 +16,8 @@
         _elSymbol: '?',
         _sift: function (json) {
             return Object.keys(json).map(function (key) {
-                return this._keyClassCreate(
-                                   this._elSymbol, this._elementClass,
-                                   json[key], {id: key});
+                return this._keyClassCreate(this._elSymbol, this._elementClass,
+                                            json[key], {id: key});
             }, this);
         },
         getIDs: function () {
@@ -40,11 +39,9 @@
         toJSON: function (ignoreUnused) {
             return this.toArray().reduce(function (jsonOut, element) {
                 if (jsonOut.hasOwnProperty(element.getID())) {
-                    logError("ID encountered multiple times: " +
-                                  element.getID());
+                    logError("ID found multiple times: " + element.getID());
                 } else {
-                    jsonOut[element.getID()] = 
-                        element.toJSON(ignoreUnused);
+                    jsonOut[element.getID()] = element.toJSON(ignoreUnused);
                 }
                 return jsonOut;
             }, {});

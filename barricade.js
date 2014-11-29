@@ -514,7 +514,7 @@ var Barricade = (function () {
         _sift: function (json) {
             return json.map(function (el) {
                 return this._keyClassCreate(this._elSymbol,
-                                              this._elementClass, el);
+                                            this._elementClass, el);
             }, this);
         }, 
         get: function (index) {
@@ -537,13 +537,10 @@ var Barricade = (function () {
         _doSet: function (index, newVal, newParameters) {
             var oldVal = this._data[index];
 
-            if (this._isCorrectType(newVal, this._elementClass)) {
-                this._data[index] = newVal;
-            } else {
-                this._data[index] = this._keyClassCreate(
-                                  this._elSymbol, this._elementClass,
-                                  newVal, newParameters);
-            }
+            this._data[index] = this._isCorrectType(newVal, this._elementClass)
+                ? this._data[index] = newVal
+                : this._keyClassCreate(this._elSymbol, this._elementClass,
+                                       newVal, newParameters);
 
             this.emit('change', 'set', index, this._data[index], oldVal);
         },
@@ -559,13 +556,11 @@ var Barricade = (function () {
             });
         },
         push: function (newValue, newParameters) {
-            if (this._isCorrectType(newValue, this._elementClass)) {
-                this._data.push(newValue);
-            } else {
-                this._data.push(this._keyClassCreate(
-                              this._elSymbol, this._elementClass,
-                              newValue, newParameters));
-            }
+            this._data.push(
+                this._isCorrectType(newValue, this._elementClass)
+                    ? newValue
+                    : this._keyClassCreate(this._elSymbol, this._elementClass,
+                                           newValue, newParameters));
 
             this.emit('_addedElement', this._data.length - 1);
             this.emit('change', 'add', this._data.length - 1);
@@ -587,9 +582,9 @@ var Barricade = (function () {
                     enumerable: false,
                     writable: true,
                     value: this.getKeys().reduce(function (classes, key) {
-                            classes[key] = self._getKeyClass(key);
-                            return classes;
-                        }, {})
+                        classes[key] = self._getKeyClass(key);
+                        return classes;
+                    }, {})
                 });
             }
 
@@ -598,8 +593,8 @@ var Barricade = (function () {
         _sift: function (json) {
             var self = this;
             return this.getKeys().reduce(function (objOut, key) {
-                objOut[key] = self._keyClassCreate(
-                                   key, self._keyClasses[key], json[key]);
+                objOut[key] =
+                    self._keyClassCreate(key, self._keyClasses[key], json[key]);
                 return objOut;
             }, {});
         },
@@ -610,13 +605,12 @@ var Barricade = (function () {
             var oldVal = this._data[key];
 
             if (this._schema.hasOwnProperty(key)) {
-                if (this._isCorrectType(newValue,
-                                          this._keyClasses[key])) {
+                if (this._isCorrectType(newValue, this._keyClasses[key])) {
                     this._data[key] = newValue;
                 } else {
-                    this._data[key] = this._keyClassCreate(
-                                          key, this._keyClasses[key],
-                                          newValue, newParameters);
+                    this._data[key] =
+                        this._keyClassCreate(key, this._keyClasses[key],
+                                             newValue, newParameters);
                 }
 
                 this.emit('change', 'set', key, this._data[key], oldVal);
@@ -638,7 +632,7 @@ var Barricade = (function () {
             });
         },
         isEmpty: function () {
-            return Object.keys(this._data).length === 0;
+            return !!Object.keys(this._data).length;
         },
         toJSON: function (ignoreUnused) {
             var data = this._data;
@@ -660,9 +654,8 @@ var Barricade = (function () {
         _elSymbol: '?',
         _sift: function (json) {
             return Object.keys(json).map(function (key) {
-                return this._keyClassCreate(
-                                   this._elSymbol, this._elementClass,
-                                   json[key], {id: key});
+                return this._keyClassCreate(this._elSymbol, this._elementClass,
+                                            json[key], {id: key});
             }, this);
         },
         getIDs: function () {
@@ -684,11 +677,9 @@ var Barricade = (function () {
         toJSON: function (ignoreUnused) {
             return this.toArray().reduce(function (jsonOut, element) {
                 if (jsonOut.hasOwnProperty(element.getID())) {
-                    logError("ID encountered multiple times: " +
-                                  element.getID());
+                    logError("ID found multiple times: " + element.getID());
                 } else {
-                    jsonOut[element.getID()] = 
-                        element.toJSON(ignoreUnused);
+                    jsonOut[element.getID()] = element.toJSON(ignoreUnused);
                 }
                 return jsonOut;
             }, {});

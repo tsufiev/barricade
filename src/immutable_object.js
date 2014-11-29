@@ -20,9 +20,9 @@
                     enumerable: false,
                     writable: true,
                     value: this.getKeys().reduce(function (classes, key) {
-                            classes[key] = self._getKeyClass(key);
-                            return classes;
-                        }, {})
+                        classes[key] = self._getKeyClass(key);
+                        return classes;
+                    }, {})
                 });
             }
 
@@ -31,8 +31,8 @@
         _sift: function (json) {
             var self = this;
             return this.getKeys().reduce(function (objOut, key) {
-                objOut[key] = self._keyClassCreate(
-                                   key, self._keyClasses[key], json[key]);
+                objOut[key] =
+                    self._keyClassCreate(key, self._keyClasses[key], json[key]);
                 return objOut;
             }, {});
         },
@@ -43,13 +43,12 @@
             var oldVal = this._data[key];
 
             if (this._schema.hasOwnProperty(key)) {
-                if (this._isCorrectType(newValue,
-                                          this._keyClasses[key])) {
+                if (this._isCorrectType(newValue, this._keyClasses[key])) {
                     this._data[key] = newValue;
                 } else {
-                    this._data[key] = this._keyClassCreate(
-                                          key, this._keyClasses[key],
-                                          newValue, newParameters);
+                    this._data[key] =
+                        this._keyClassCreate(key, this._keyClasses[key],
+                                             newValue, newParameters);
                 }
 
                 this.emit('change', 'set', key, this._data[key], oldVal);
@@ -71,7 +70,7 @@
             });
         },
         isEmpty: function () {
-            return Object.keys(this._data).length === 0;
+            return !!Object.keys(this._data).length;
         },
         toJSON: function (ignoreUnused) {
             var data = this._data;
