@@ -12,14 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-    Blueprint = {
-        create: function (f) {
-            return function g() {
-                if (!this.hasOwnProperty('_parents')) {
-                    Object.defineProperty(this, '_parents', {value: []});
-                }
-                this._parents.push(g);
-                return f.apply(this, arguments);
-            };
-        }
-    };
+beforeEach(SAVE_GLOBAL_STATE);
+afterEach(ENSURE_GLOBAL_OBJECT_UNPOLLUTED);
+
+describe('Blueprint', function () {
+    it('should add used blueprints to _parents array', function () {
+        var bp = Barricade.Blueprint.create(function () { return this; }),
+            instance = bp.call({});
+
+        expect(instance._parents).toEqual([bp]);
+    });
+});

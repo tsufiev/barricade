@@ -22,19 +22,13 @@ var Barricade = (function () {
 
     Blueprint = {
         create: function (f) {
-            var g = function () {
-                    if (this.hasOwnProperty('_parents')) {
-                        this._parents.push(g);
-                    } else {
-                        Object.defineProperty(this, '_parents', {
-                            value: [g]
-                        });
-                    }
-
-                    return f.apply(this, arguments);
-                };
-
-            return g;
+            return function g() {
+                if (!this.hasOwnProperty('_parents')) {
+                    Object.defineProperty(this, '_parents', {value: []});
+                }
+                this._parents.push(g);
+                return f.apply(this, arguments);
+            };
         }
     };
 
