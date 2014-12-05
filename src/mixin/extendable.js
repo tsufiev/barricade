@@ -14,13 +14,8 @@
 
     Extendable = Blueprint.create(function () {
         function forInKeys(obj) {
-            var key,
-                keys = [];
-
-            for (key in obj) {
-                keys.push(key);
-            }
-
+            var key, keys = [];
+            for (key in obj) { keys.push(key); }
             return keys;
         }
 
@@ -30,18 +25,14 @@
         }
 
         function extend(extension) {
-            function addProperty(object, prop) {
+            return Object.keys(extension).reduce(function (object, prop) {
                 return Object.defineProperty(object, prop, {
                     enumerable: true,
                     writable: true,
                     configurable: true,
                     value: extension[prop]
                 });
-            }
-
-            // add properties to extended object
-            return Object.keys(extension).reduce(addProperty,
-                                                 Object.create(this));
+            }, Object.create(this));
         }
 
         function deepClone(object) {
@@ -71,11 +62,9 @@
             writable: false,
             value: function (extension, schema) {
                 if (schema) {
-                    extension._schema = '_schema' in this ?
-                                            deepClone(this._schema) : {};
-                    merge(extension._schema, schema);
+                    extension._schema = deepClone(this._schema) || {};
+                    merge(extension._schema, schema || {});
                 }
-
                 return extend.call(this, extension);
             }
         });

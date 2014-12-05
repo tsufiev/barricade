@@ -296,6 +296,7 @@ module.exports = function (grunt) {
                     specs: [
                         'test/core_spec.js',
                         'test/util/blueprint_spec.js',
+                        'test/mixin/extendable_spec.js',
                         'test/primitive_spec.js',
                         'test/array_spec.js',
                         'test/immutable_object_spec.js',
