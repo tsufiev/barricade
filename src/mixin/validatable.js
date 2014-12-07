@@ -20,8 +20,8 @@
             constraints = [];
         }
 
-        this.hasError = function () { return error !== null; };
         this.getError = function () { return error || ''; };
+        this.hasError = function () { return error !== null; };
 
         this._validate = function (value) {
             function getConstraintMessage(i, lastMessage) {

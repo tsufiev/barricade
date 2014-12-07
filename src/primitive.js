@@ -19,6 +19,14 @@
         get: function () {
             return this._data;
         },
+        isEmpty: function () {
+            if (this._schema['@type'] === Array) {
+                return !this._data.length;
+            } else if (this._schema['@type'] === Object) {
+                return !Object.keys(this._data).length;
+            }
+            return this._data === this._schema['@type']();
+        },
         set: function (newVal) {
             var schema = this._schema;
 
@@ -37,14 +45,6 @@
             logError("Setter - new value (", newVal, ")",
                      " did not match schema: ", schema);
             return this;
-        },
-        isEmpty: function () {
-            if (this._schema['@type'] === Array) {
-                return !this._data.length;
-            } else if (this._schema['@type'] === Object) {
-                return !Object.keys(this._data).length;
-            }
-            return this._data === this._schema['@type']();
         },
         toJSON: function () {
             return this._data;

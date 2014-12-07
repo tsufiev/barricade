@@ -20,6 +20,12 @@
             self._onResolve = onResolve;
             return self;
         },
+        isResolved: function () {
+            return this._isResolved;
+        },
+        needs: function (obj) {
+            return obj.instanceof(this._classGetter());
+        },
         resolve: function (obj) {
             var ref;
 
@@ -33,11 +39,5 @@
                 this._isResolved = true;
                 return ref;
             }
-        },
-        isResolved: function () {
-            return this._isResolved;
-        },
-        needs: function (obj) {
-            return obj.instanceof(this._classGetter());
         }
     };

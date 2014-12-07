@@ -36,9 +36,6 @@
                 return objOut;
             }, {});
         },
-        get: function (key) {
-            return this._data[key];
-        },
         _doSet: function (key, newValue, newParameters) {
             var oldVal = this._data[key];
 
@@ -71,6 +68,14 @@
 
             return this;
         },
+        get: function (key) {
+            return this._data[key];
+        },
+        getKeys: function () {
+            return Object.keys(this._schema).filter(function (key) {
+                return key.charAt(0) !== '@';
+            });
+        },
         isEmpty: function () {
             return !Object.keys(this._data).length;
         },
@@ -82,10 +87,5 @@
                 }
                 return jsonOut;
             }, {});
-        },
-        getKeys: function () {
-            return Object.keys(this._schema).filter(function (key) {
-                return key.charAt(0) !== '@';
-            });
         }
     });

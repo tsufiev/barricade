@@ -33,15 +33,14 @@ var Barricade = (function () {
     };
 
     Extendable = Blueprint.create(function () {
-        function forInKeys(obj) {
-            var key, keys = [];
-            for (key in obj) { keys.push(key); }
-            return keys;
-        }
-
-        function isPlainObject(obj) {
-            return getType(obj) === Object &&
-                Object.getPrototypeOf(Object.getPrototypeOf(obj)) === null;
+        function deepClone(object) {
+            if (isPlainObject(object)) {
+                return forInKeys(object).reduce(function (clone, key) {
+                    clone[key] = deepClone(object[key]);
+                    return clone;
+                }, {});
+            }
+            return object;
         }
 
         function extend(extension) {
@@ -55,14 +54,15 @@ var Barricade = (function () {
             }, Object.create(this));
         }
 
-        function deepClone(object) {
-            if (isPlainObject(object)) {
-                return forInKeys(object).reduce(function (clone, key) {
-                    clone[key] = deepClone(object[key]);
-                    return clone;
-                }, {});
-            }
-            return object;
+        function forInKeys(obj) {
+            var key, keys = [];
+            for (key in obj) { keys.push(key); }
+            return keys;
+        }
+
+        function isPlainObject(obj) {
+            return getType(obj) === Object &&
+                Object.getPrototypeOf(Object.getPrototypeOf(obj)) === null;
         }
 
         function merge(target, source) {
@@ -189,8 +189,8 @@ var Barricade = (function () {
             constraints = [];
         }
 
-        this.hasError = function () { return error !== null; };
         this.getError = function () { return error || ''; };
+        this.hasError = function () { return error !== null; };
 
         this._validate = function (value) {
             function getConstraintMessage(i, lastMessage) {
@@ -245,11 +245,14 @@ var Barricade = (function () {
             return events.hasOwnProperty(eventName);
         }
 
-        this.on = function (eventName, callback) {
-            if (!hasEvent(eventName)) {
-                events[eventName] = [];
+        this.emit = function (eventName) {
+            var args = arguments; // Must come from correct scope
+            if (events.hasOwnProperty(eventName)) {
+                events[eventName].forEach(function (callback) {
+                    // Call with emitter as context and pass all but eventName
+                    callback.apply(this, Array.prototype.slice.call(args, 1));
+                }, this);
             }
-            events[eventName].push(callback);
             return this;
         };
 
@@ -266,14 +269,11 @@ var Barricade = (function () {
             return this;
         };
 
-        this.emit = function (eventName) {
-            var args = arguments; // Must come from correct scope
-            if (events.hasOwnProperty(eventName)) {
-                events[eventName].forEach(function (callback) {
-                    // Call with emitter as context and pass all but eventName
-                    callback.apply(this, Array.prototype.slice.call(args, 1));
-                }, this);
+        this.on = function (eventName, callback) {
+            if (!hasEvent(eventName)) {
+                events[eventName] = [];
             }
+            events[eventName].push(callback);
             return this;
         };
     });
@@ -285,6 +285,12 @@ var Barricade = (function () {
             self._classGetter = classGetter;
             self._onResolve = onResolve;
             return self;
+        },
+        isResolved: function () {
+            return this._isResolved;
+        },
+        needs: function (obj) {
+            return obj.instanceof(this._classGetter());
         },
         resolve: function (obj) {
             var ref;
@@ -299,12 +305,6 @@ var Barricade = (function () {
                 this._isResolved = true;
                 return ref;
             }
-        },
-        isResolved: function () {
-            return this._isResolved;
-        },
-        needs: function (obj) {
-            return obj.instanceof(this._classGetter());
         }
     };
 
@@ -341,6 +341,13 @@ var Barricade = (function () {
 
             return self;
         },
+        _getDefaultValue: function () {
+            return this._schema.hasOwnProperty('@default')
+                ? typeof this._schema['@default'] === 'function'
+                    ? this._schema['@default']()
+                    : this._schema['@default']
+                : this._schema['@type']();
+        },
         _setData: function(json) {
             var isUsed = true,
                 type = this._schema['@type'];
@@ -359,29 +366,22 @@ var Barricade = (function () {
 
             return isUsed;
         },
-        _getDefaultValue: function () {
-            return this._schema.hasOwnProperty('@default')
-                ? typeof this._schema['@default'] === 'function'
-                    ? this._schema['@default']()
-                    : this._schema['@default']
-                : this._schema['@type']();
-        },
-        _sift: function () {
-            throw new Error("sift() must be overridden in subclass");
-        },
         _safeInstanceof: function (instance, class_) {
             return typeof instance === 'object' &&
                 ('instanceof' in instance) &&
                 instance.instanceof(class_);
         },
+        _sift: function () {
+            throw new Error("sift() must be overridden in subclass");
+        },
         getPrimitiveType: function () {
             return this._schema['@type'];
         },
-        isRequired: function () {
-            return this._schema['@required'] !== false;
-        },
         isEmpty: function () {
             throw new Error('Subclass should override isEmpty()');
+        },
+        isRequired: function () {
+            return this._schema['@required'] !== false;
         }
     }));
 
@@ -396,11 +396,6 @@ var Barricade = (function () {
                 self._attachListeners(index);
                 value.resolveWith(self);
             });
-        },
-        _tryResolveOn: function (value) {
-            if (!value.resolveWith(this)) {
-                this.emit('_resolveUp', value);
-            }
         },
         _attachListeners: function (key) {
             var self = this,
@@ -438,11 +433,6 @@ var Barricade = (function () {
                 ? this._schema[key]['@class']
                 : BarricadeMain.create(this._schema[key]);
         },
-        _keyClassCreate: function (key, keyClass, json, parameters) {
-            return this._schema[key].hasOwnProperty('@factory')
-                ? this._schema[key]['@factory'](json, parameters)
-                : keyClass.create(json, parameters);
-        },
         _isCorrectType: function (instance, class_) {
             var self = this;
 
@@ -459,6 +449,16 @@ var Barricade = (function () {
 
             return this._safeInstanceof(instance, class_) ||
                 (class_._schema.hasOwnProperty('@ref') && isRefTo());
+        },
+        _keyClassCreate: function (key, keyClass, json, parameters) {
+            return this._schema[key].hasOwnProperty('@factory')
+                ? this._schema[key]['@factory'](json, parameters)
+                : keyClass.create(json, parameters);
+        },
+        _tryResolveOn: function (value) {
+            if (!value.resolveWith(this)) {
+                this.emit('_resolveUp', value);
+            }
         },
         set: function (key, value) {
             this.get(key).emit('removeFrom', this);
@@ -479,6 +479,16 @@ var Barricade = (function () {
             }
             return Container.create.call(this, json, parameters);
         },
+        _doSet: function (index, newVal, newParameters) {
+            var oldVal = this._data[index];
+
+            this._data[index] = this._isCorrectType(newVal, this._elementClass)
+                ? this._data[index] = newVal
+                : this._keyClassCreate(this._elSymbol, this._elementClass,
+                                       newVal, newParameters);
+
+            this.emit('change', 'set', index, this._data[index], oldVal);
+        },
         _elSymbol: '*',
         _sift: function (json) {
             return json.map(function (el) {
@@ -486,9 +496,6 @@ var Barricade = (function () {
                     this._elSymbol, this._elementClass, el);
             }, this);
         }, 
-        get: function (index) {
-            return this._data[index];
-        },
         each: function (functionIn, comparatorIn) {
             var arr = this._data.slice();
 
@@ -502,29 +509,14 @@ var Barricade = (function () {
 
             return this;
         },
-        toArray: function () {
-            return this._data.slice(); // Shallow copy to prevent mutation
-        },
-        _doSet: function (index, newVal, newParameters) {
-            var oldVal = this._data[index];
-
-            this._data[index] = this._isCorrectType(newVal, this._elementClass)
-                ? this._data[index] = newVal
-                : this._keyClassCreate(this._elSymbol, this._elementClass,
-                                       newVal, newParameters);
-
-            this.emit('change', 'set', index, this._data[index], oldVal);
-        },
-        length: function () {
-            return this._data.length;
+        get: function (index) {
+            return this._data[index];
         },
         isEmpty: function () {
             return !this._data.length;
         },
-        toJSON: function (ignoreUnused) {
-            return this._data.map(function (el) {
-                return el.toJSON(ignoreUnused);
-            });
+        length: function () {
+            return this._data.length;
         },
         push: function (newValue, newParameters) {
             this._data.push(
@@ -540,6 +532,14 @@ var Barricade = (function () {
             this._data[index].emit('removeFrom', this);
             this._data.splice(index, 1);
             return this.emit('change', 'remove', index);
+        },
+        toArray: function () {
+            return this._data.slice(); // Shallow copy to prevent mutation
+        },
+        toJSON: function (ignoreUnused) {
+            return this._data.map(function (el) {
+                return el.toJSON(ignoreUnused);
+            });
         }
     });
 
@@ -568,9 +568,6 @@ var Barricade = (function () {
                     self._keyClassCreate(key, self._keyClasses[key], json[key]);
                 return objOut;
             }, {});
-        },
-        get: function (key) {
-            return this._data[key];
         },
         _doSet: function (key, newValue, newParameters) {
             var oldVal = this._data[key];
@@ -604,6 +601,14 @@ var Barricade = (function () {
 
             return this;
         },
+        get: function (key) {
+            return this._data[key];
+        },
+        getKeys: function () {
+            return Object.keys(this._schema).filter(function (key) {
+                return key.charAt(0) !== '@';
+            });
+        },
         isEmpty: function () {
             return !Object.keys(this._data).length;
         },
@@ -615,11 +620,6 @@ var Barricade = (function () {
                 }
                 return jsonOut;
             }, {});
-        },
-        getKeys: function () {
-            return Object.keys(this._schema).filter(function (key) {
-                return key.charAt(0) !== '@';
-            });
         }
     });
 
@@ -631,6 +631,14 @@ var Barricade = (function () {
                                             json[key], {id: key});
             }, this);
         },
+        contains: function (element) {
+            return this.toArray().some(function (value) {
+                return element === value;
+            });
+        },
+        getByID: function (id) {
+            return this.get(this.getPosByID(id));
+        },
         getIDs: function () {
             return this.toArray().map(function (value) {
                 return value.getID();
@@ -638,24 +646,6 @@ var Barricade = (function () {
         },
         getPosByID: function (id) {
             return this.getIDs().indexOf(id);
-        },
-        getByID: function (id) {
-            return this.get(this.getPosByID(id));
-        },
-        contains: function (element) {
-            return this.toArray().some(function (value) {
-                return element === value;
-            });
-        },
-        toJSON: function (ignoreUnused) {
-            return this.toArray().reduce(function (jsonOut, element) {
-                if (jsonOut.hasOwnProperty(element.getID())) {
-                    logError("ID found multiple times: " + element.getID());
-                } else {
-                    jsonOut[element.getID()] = element.toJSON(ignoreUnused);
-                }
-                return jsonOut;
-            }, {});
         },
         push: function (newJson, newParameters) {
             if (!this._safeInstanceof(newJson, this._elementClass) &&
@@ -666,6 +656,16 @@ var Barricade = (function () {
                 return Arraylike.push.call(this, newJson, newParameters);
             }
         },
+        toJSON: function (ignoreUnused) {
+            return this.toArray().reduce(function (jsonOut, element) {
+                if (jsonOut.hasOwnProperty(element.getID())) {
+                    logError("ID found multiple times: " + element.getID());
+                } else {
+                    jsonOut[element.getID()] = element.toJSON(ignoreUnused);
+                }
+                return jsonOut;
+            }, {});
+        }
     });
 
     Primitive = Base.extend({
@@ -674,6 +674,14 @@ var Barricade = (function () {
         },
         get: function () {
             return this._data;
+        },
+        isEmpty: function () {
+            if (this._schema['@type'] === Array) {
+                return !this._data.length;
+            } else if (this._schema['@type'] === Object) {
+                return !Object.keys(this._data).length;
+            }
+            return this._data === this._schema['@type']();
         },
         set: function (newVal) {
             var schema = this._schema;
@@ -693,14 +701,6 @@ var Barricade = (function () {
             logError("Setter - new value (", newVal, ")",
                      " did not match schema: ", schema);
             return this;
-        },
-        isEmpty: function () {
-            if (this._schema['@type'] === Array) {
-                return !this._data.length;
-            } else if (this._schema['@type'] === Object) {
-                return !Object.keys(this._data).length;
-            }
-            return this._data === this._schema['@type']();
         },
         toJSON: function () {
             return this._data;

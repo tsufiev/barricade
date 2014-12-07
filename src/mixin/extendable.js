@@ -13,15 +13,14 @@
 // limitations under the License.
 
     Extendable = Blueprint.create(function () {
-        function forInKeys(obj) {
-            var key, keys = [];
-            for (key in obj) { keys.push(key); }
-            return keys;
-        }
-
-        function isPlainObject(obj) {
-            return getType(obj) === Object &&
-                Object.getPrototypeOf(Object.getPrototypeOf(obj)) === null;
+        function deepClone(object) {
+            if (isPlainObject(object)) {
+                return forInKeys(object).reduce(function (clone, key) {
+                    clone[key] = deepClone(object[key]);
+                    return clone;
+                }, {});
+            }
+            return object;
         }
 
         function extend(extension) {
@@ -35,14 +34,15 @@
             }, Object.create(this));
         }
 
-        function deepClone(object) {
-            if (isPlainObject(object)) {
-                return forInKeys(object).reduce(function (clone, key) {
-                    clone[key] = deepClone(object[key]);
-                    return clone;
-                }, {});
-            }
-            return object;
+        function forInKeys(obj) {
+            var key, keys = [];
+            for (key in obj) { keys.push(key); }
+            return keys;
+        }
+
+        function isPlainObject(obj) {
+            return getType(obj) === Object &&
+                Object.getPrototypeOf(Object.getPrototypeOf(obj)) === null;
         }
 
         function merge(target, source) {

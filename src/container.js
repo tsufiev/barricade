@@ -24,11 +24,6 @@
                 value.resolveWith(self);
             });
         },
-        _tryResolveOn: function (value) {
-            if (!value.resolveWith(this)) {
-                this.emit('_resolveUp', value);
-            }
-        },
         _attachListeners: function (key) {
             var self = this,
                 element = this.get(key),
@@ -65,11 +60,6 @@
                 ? this._schema[key]['@class']
                 : BarricadeMain.create(this._schema[key]);
         },
-        _keyClassCreate: function (key, keyClass, json, parameters) {
-            return this._schema[key].hasOwnProperty('@factory')
-                ? this._schema[key]['@factory'](json, parameters)
-                : keyClass.create(json, parameters);
-        },
         _isCorrectType: function (instance, class_) {
             var self = this;
 
@@ -86,6 +76,16 @@
 
             return this._safeInstanceof(instance, class_) ||
                 (class_._schema.hasOwnProperty('@ref') && isRefTo());
+        },
+        _keyClassCreate: function (key, keyClass, json, parameters) {
+            return this._schema[key].hasOwnProperty('@factory')
+                ? this._schema[key]['@factory'](json, parameters)
+                : keyClass.create(json, parameters);
+        },
+        _tryResolveOn: function (value) {
+            if (!value.resolveWith(this)) {
+                this.emit('_resolveUp', value);
+            }
         },
         set: function (key, value) {
             this.get(key).emit('removeFrom', this);

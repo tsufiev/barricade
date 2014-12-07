@@ -23,6 +23,16 @@
             }
             return Container.create.call(this, json, parameters);
         },
+        _doSet: function (index, newVal, newParameters) {
+            var oldVal = this._data[index];
+
+            this._data[index] = this._isCorrectType(newVal, this._elementClass)
+                ? this._data[index] = newVal
+                : this._keyClassCreate(this._elSymbol, this._elementClass,
+                                       newVal, newParameters);
+
+            this.emit('change', 'set', index, this._data[index], oldVal);
+        },
         _elSymbol: '*',
         _sift: function (json) {
             return json.map(function (el) {
@@ -30,9 +40,6 @@
                     this._elSymbol, this._elementClass, el);
             }, this);
         }, 
-        get: function (index) {
-            return this._data[index];
-        },
         each: function (functionIn, comparatorIn) {
             var arr = this._data.slice();
 
@@ -46,29 +53,14 @@
 
             return this;
         },
-        toArray: function () {
-            return this._data.slice(); // Shallow copy to prevent mutation
-        },
-        _doSet: function (index, newVal, newParameters) {
-            var oldVal = this._data[index];
-
-            this._data[index] = this._isCorrectType(newVal, this._elementClass)
-                ? this._data[index] = newVal
-                : this._keyClassCreate(this._elSymbol, this._elementClass,
-                                       newVal, newParameters);
-
-            this.emit('change', 'set', index, this._data[index], oldVal);
-        },
-        length: function () {
-            return this._data.length;
+        get: function (index) {
+            return this._data[index];
         },
         isEmpty: function () {
             return !this._data.length;
         },
-        toJSON: function (ignoreUnused) {
-            return this._data.map(function (el) {
-                return el.toJSON(ignoreUnused);
-            });
+        length: function () {
+            return this._data.length;
         },
         push: function (newValue, newParameters) {
             this._data.push(
@@ -84,5 +76,13 @@
             this._data[index].emit('removeFrom', this);
             this._data.splice(index, 1);
             return this.emit('change', 'remove', index);
+        },
+        toArray: function () {
+            return this._data.slice(); // Shallow copy to prevent mutation
+        },
+        toJSON: function (ignoreUnused) {
+            return this._data.map(function (el) {
+                return el.toJSON(ignoreUnused);
+            });
         }
     });

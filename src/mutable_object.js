@@ -20,6 +20,14 @@
                                             json[key], {id: key});
             }, this);
         },
+        contains: function (element) {
+            return this.toArray().some(function (value) {
+                return element === value;
+            });
+        },
+        getByID: function (id) {
+            return this.get(this.getPosByID(id));
+        },
         getIDs: function () {
             return this.toArray().map(function (value) {
                 return value.getID();
@@ -27,24 +35,6 @@
         },
         getPosByID: function (id) {
             return this.getIDs().indexOf(id);
-        },
-        getByID: function (id) {
-            return this.get(this.getPosByID(id));
-        },
-        contains: function (element) {
-            return this.toArray().some(function (value) {
-                return element === value;
-            });
-        },
-        toJSON: function (ignoreUnused) {
-            return this.toArray().reduce(function (jsonOut, element) {
-                if (jsonOut.hasOwnProperty(element.getID())) {
-                    logError("ID found multiple times: " + element.getID());
-                } else {
-                    jsonOut[element.getID()] = element.toJSON(ignoreUnused);
-                }
-                return jsonOut;
-            }, {});
         },
         push: function (newJson, newParameters) {
             if (!this._safeInstanceof(newJson, this._elementClass) &&
@@ -55,4 +45,14 @@
                 return Arraylike.push.call(this, newJson, newParameters);
             }
         },
+        toJSON: function (ignoreUnused) {
+            return this.toArray().reduce(function (jsonOut, element) {
+                if (jsonOut.hasOwnProperty(element.getID())) {
+                    logError("ID found multiple times: " + element.getID());
+                } else {
+                    jsonOut[element.getID()] = element.toJSON(ignoreUnused);
+                }
+                return jsonOut;
+            }, {});
+        }
     });

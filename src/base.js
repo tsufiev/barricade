@@ -45,6 +45,13 @@
 
             return self;
         },
+        _getDefaultValue: function () {
+            return this._schema.hasOwnProperty('@default')
+                ? typeof this._schema['@default'] === 'function'
+                    ? this._schema['@default']()
+                    : this._schema['@default']
+                : this._schema['@type']();
+        },
         _setData: function(json) {
             var isUsed = true,
                 type = this._schema['@type'];
@@ -63,28 +70,21 @@
 
             return isUsed;
         },
-        _getDefaultValue: function () {
-            return this._schema.hasOwnProperty('@default')
-                ? typeof this._schema['@default'] === 'function'
-                    ? this._schema['@default']()
-                    : this._schema['@default']
-                : this._schema['@type']();
-        },
-        _sift: function () {
-            throw new Error("sift() must be overridden in subclass");
-        },
         _safeInstanceof: function (instance, class_) {
             return typeof instance === 'object' &&
                 ('instanceof' in instance) &&
                 instance.instanceof(class_);
         },
+        _sift: function () {
+            throw new Error("sift() must be overridden in subclass");
+        },
         getPrimitiveType: function () {
             return this._schema['@type'];
         },
-        isRequired: function () {
-            return this._schema['@required'] !== false;
-        },
         isEmpty: function () {
             throw new Error('Subclass should override isEmpty()');
+        },
+        isRequired: function () {
+            return this._schema['@required'] !== false;
         }
     }));
