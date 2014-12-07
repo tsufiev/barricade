@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-    var ImmutableObject = Container.extend({
+    ImmutableObject = Container.extend({
         create: function (json, parameters) {
             var self = this;
             if (!this.hasOwnProperty('_keyClasses')) {
@@ -20,42 +20,38 @@
                     enumerable: false,
                     writable: true,
                     value: this.getKeys().reduce(function (classes, key) {
-                            classes[key] = self._getKeyClass(key);
-                            return classes;
-                        }, {})
+                        classes[key] = self._getKeyClass(key);
+                        return classes;
+                    }, {})
                 });
             }
 
             return Container.create.call(this, json, parameters);
         },
-        _sift: function (json, parameters) {
+        _sift: function (json) {
             var self = this;
             return this.getKeys().reduce(function (objOut, key) {
-                objOut[key] = self._keyClassCreate(
-                                   key, self._keyClasses[key], json[key]);
+                objOut[key] =
+                    self._keyClassCreate(key, self._keyClasses[key], json[key]);
                 return objOut;
             }, {});
-        },
-        get: function (key) {
-            return this._data[key];
         },
         _doSet: function (key, newValue, newParameters) {
             var oldVal = this._data[key];
 
             if (this._schema.hasOwnProperty(key)) {
-                if (this._isCorrectType(newValue,
-                                          this._keyClasses[key])) {
+                if (this._isCorrectType(newValue, this._keyClasses[key])) {
                     this._data[key] = newValue;
                 } else {
-                    this._data[key] = this._keyClassCreate(
-                                          key, this._keyClasses[key],
-                                          newValue, newParameters);
+                    this._data[key] =
+                        this._keyClassCreate(key, this._keyClasses[key],
+                                             newValue, newParameters);
                 }
 
                 this.emit('change', 'set', key, this._data[key], oldVal);
             } else {
-                console.error('object does not have key (key, schema)');
-                console.log(key, this._schema);
+                logError('object does not have key: ', key,
+                         ' schema: ', this._schema);
             }
         },
         each: function (functionIn, comparatorIn) {
@@ -69,9 +65,19 @@
             keys.forEach(function (key) {
                 functionIn(key, self._data[key]);
             });
+
+            return this;
+        },
+        get: function (key) {
+            return this._data[key];
+        },
+        getKeys: function () {
+            return Object.keys(this._schema).filter(function (key) {
+                return key.charAt(0) !== '@';
+            });
         },
         isEmpty: function () {
-            return Object.keys(this._data).length === 0;
+            return !Object.keys(this._data).length;
         },
         toJSON: function (ignoreUnused) {
             var data = this._data;
@@ -81,10 +87,5 @@
                 }
                 return jsonOut;
             }, {});
-        },
-        getKeys: function () {
-            return Object.keys(this._schema).filter(function (key) {
-                return key.charAt(0) !== '@';
-            });
         }
     });

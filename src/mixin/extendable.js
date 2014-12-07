@@ -12,38 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-    var Extendable = Blueprint.create(function () {
-        function forInKeys(obj) {
-            var key,
-                keys = [];
-
-            for (key in obj) {
-                keys.push(key);
-            }
-
-            return keys;
-        }
-
-        function isPlainObject(obj) {
-            return getType(obj) === Object &&
-                Object.getPrototypeOf(Object.getPrototypeOf(obj)) === null;
-        }
-
-        function extend(extension) {
-            function addProperty(object, prop) {
-                return Object.defineProperty(object, prop, {
-                    enumerable: true,
-                    writable: true,
-                    configurable: true,
-                    value: extension[prop]
-                });
-            }
-
-            // add properties to extended object
-            return Object.keys(extension).reduce(addProperty,
-                                                 Object.create(this));
-        }
-
+    Extendable = Blueprint.create(function () {
         function deepClone(object) {
             if (isPlainObject(object)) {
                 return forInKeys(object).reduce(function (clone, key) {
@@ -52,6 +21,28 @@
                 }, {});
             }
             return object;
+        }
+
+        function extend(extension) {
+            return Object.keys(extension).reduce(function (object, prop) {
+                return Object.defineProperty(object, prop, {
+                    enumerable: true,
+                    writable: true,
+                    configurable: true,
+                    value: extension[prop]
+                });
+            }, Object.create(this));
+        }
+
+        function forInKeys(obj) {
+            var key, keys = [];
+            for (key in obj) { keys.push(key); }
+            return keys;
+        }
+
+        function isPlainObject(obj) {
+            return getType(obj) === Object &&
+                Object.getPrototypeOf(Object.getPrototypeOf(obj)) === null;
         }
 
         function merge(target, source) {
@@ -71,11 +62,9 @@
             writable: false,
             value: function (extension, schema) {
                 if (schema) {
-                    extension._schema = '_schema' in this ?
-                                            deepClone(this._schema) : {};
+                    extension._schema = deepClone(this._schema) || {};
                     merge(extension._schema, schema);
                 }
-
                 return extend.call(this, extension);
             }
         });

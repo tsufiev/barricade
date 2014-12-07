@@ -12,5 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-Barricade = (function () {
+var Barricade = (function () {
     "use strict";
+
+    var Array_, Arraylike, BarricadeMain, Base, Blueprint, Container,
+        Deferrable, Deferred, Enumerated, Extendable, Identifiable,
+        ImmutableObject, InstanceofMixin, MutableObject, Observable, Omittable,
+        Primitive, Validatable;

@@ -12,13 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-    var Deferred = {
+    Deferred = {
         create: function (classGetter, onResolve) {
             var self = Object.create(this);
             self._isResolved = false;
             self._classGetter = classGetter;
             self._onResolve = onResolve;
             return self;
+        },
+        isResolved: function () {
+            return this._isResolved;
+        },
+        needs: function (obj) {
+            return obj.instanceof(this._classGetter());
         },
         resolve: function (obj) {
             var ref;
@@ -33,11 +39,5 @@
                 this._isResolved = true;
                 return ref;
             }
-        },
-        isResolved: function () {
-            return this._isResolved;
-        },
-        needs: function (obj) {
-            return obj.instanceof(this._classGetter());
         }
     };

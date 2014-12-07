@@ -46,6 +46,16 @@ describe('Immutable Objects', function () {
         expect(this.instance.get('numberKey').get()).toBe(43987);
     });
 
+    it('should not be empty if keys are defined', function () {
+        var noKeys = Barricade.ImmutableObject.extend({}, {
+                '@type': Object
+            }).create();
+
+        expect(this.instance.isEmpty()).toBe(false);
+        expect(noKeys.instanceof(Barricade.ImmutableObject)).toBe(true);
+        expect(noKeys.isEmpty()).toBe(true);
+    });
+
     it('.getKeys() should return array of keys', function () {
         var keys = this.instance.getKeys();
 

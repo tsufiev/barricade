@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-    var InstanceofMixin = Blueprint.create(function () {
+    InstanceofMixin = Blueprint.create(function () {
         return Object.defineProperty(this, 'instanceof', {
             enumerable: false,
             value: function (proto) {
@@ -27,8 +27,7 @@
                 }
 
                 do {
-                    if (subject === proto ||
-                            hasMixin(subject, proto)) {
+                    if (subject === proto || hasMixin(subject, proto)) {
                         return true;
                     }
                     subject = Object.getPrototypeOf(subject);

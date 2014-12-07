@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-    var Validatable = Blueprint.create(function (schema) {
+    Validatable = Blueprint.create(function (schema) {
         var constraints = schema['@constraints'],
             error = null;
 
@@ -20,8 +20,8 @@
             constraints = [];
         }
 
-        this.hasError = function () { return error !== null; };
         this.getError = function () { return error || ''; };
+        this.hasError = function () { return error !== null; };
 
         this._validate = function (value) {
             function getConstraintMessage(i, lastMessage) {
@@ -38,5 +38,6 @@
 
         this.addConstraint = function (newConstraint) {
             constraints.push(newConstraint);
+            return this;
         };
     });

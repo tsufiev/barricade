@@ -70,6 +70,12 @@ describe('Arrays', function () {
         expect(this.instance3.length()).toBe(0);
     });
 
+    it('.isEmpty() should return true if elements present', function () {
+        expect(this.instance1.isEmpty()).toBe(false);
+        expect(this.instance2.isEmpty()).toBe(false);
+        expect(this.instance3.isEmpty()).toBe(true);
+    });
+
     it('.get(index) should return element at index', function () {
         var i,
             length;

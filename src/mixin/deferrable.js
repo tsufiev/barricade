@@ -12,15 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-    var Deferrable = Blueprint.create(function (schema) {
+    Deferrable = Blueprint.create(function (schema) {
         var self = this,
             deferred;
 
         function resolver(neededValue) {
             var ref = schema['@ref'].resolver(self, neededValue);
             if (ref === undefined) {
-                logError('Could not resolve "' + 
-                          JSON.stringify(self.toJSON()) + '"');
+                logError('Could not resolve ', JSON.stringify(self.toJSON()));
             }
             return ref;
         }

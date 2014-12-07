@@ -12,12 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-    var Primitive = Base.extend({
-        _sift: function (json, parameters) {
+    Primitive = Base.extend({
+        _sift: function (json) {
             return json;
         },
         get: function () {
             return this._data;
+        },
+        isEmpty: function () {
+            if (this._schema['@type'] === Array) {
+                return !this._data.length;
+            } else if (this._schema['@type'] === Object) {
+                return !Object.keys(this._data).length;
+            }
+            return this._data === this._schema['@type']();
         },
         set: function (newVal) {
             var schema = this._schema;
@@ -28,24 +36,15 @@
 
             if (typeMatches(newVal) && this._validate(newVal)) {
                 this._data = newVal;
-                this.emit('validation', 'succeeded');
-                this.emit('change');
+                return this.emit('validation', 'succeeded')
+                           .emit('change');
             } else if (this.hasError()) {
-                this.emit('validation', 'failed');
-            } else {
-                logError("Setter - new value did not match " +
-                          "schema (newVal, schema)");
-                logVal(newVal, schema);
+                return this.emit('validation', 'failed');
             }
-        },
-        isEmpty: function () {
-            if (this._schema['@type'] === Array) {
-                return this._data.length === 0;
-            } else if (this._schema['@type'] === Object) {
-                return Object.keys(this._data).length === 0;
-            } else {
-                return this._data === this._schema['@type']();
-            }
+
+            logError("Setter - new value (", newVal, ")",
+                     " did not match schema: ", schema);
+            return this;
         },
         toJSON: function () {
             return this._data;

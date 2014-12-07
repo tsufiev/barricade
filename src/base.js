@@ -12,11 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-    var Base = Extendable.call(InstanceofMixin.call({
+    Base = Extendable.call(InstanceofMixin.call({
         create: function (json, parameters) {
             var self = this.extend({}),
                 schema = self._schema,
-                type = schema['@type'],
                 isUsed;
 
             self._parameters = parameters = parameters || {};
@@ -46,14 +45,21 @@
 
             return self;
         },
+        _getDefaultValue: function () {
+            return this._schema.hasOwnProperty('@default')
+                ? typeof this._schema['@default'] === 'function'
+                    ? this._schema['@default']()
+                    : this._schema['@default']
+                : this._schema['@type']();
+        },
         _setData: function(json) {
             var isUsed = true,
                 type = this._schema['@type'];
 
             if (getType(json) !== type) {
                 if (json) {
-                    logError("Type mismatch (json, schema)");
-                    logVal(json, this._schema);
+                    logError("Type mismatch. JSON: ", json,
+                             "schema: ", this._schema);
                 } else {
                     isUsed = false;
                 }
@@ -64,28 +70,21 @@
 
             return isUsed;
         },
-        _getDefaultValue: function () {
-            return this._schema.hasOwnProperty('@default')
-                ? typeof this._schema['@default'] === 'function'
-                    ? this._schema['@default']()
-                    : this._schema['@default']
-                : this._schema['@type']();
-        },
-        _sift: function () {
-            throw new Error("sift() must be overridden in subclass");
-        },
         _safeInstanceof: function (instance, class_) {
             return typeof instance === 'object' &&
                 ('instanceof' in instance) &&
                 instance.instanceof(class_);
         },
+        _sift: function () {
+            throw new Error("sift() must be overridden in subclass");
+        },
         getPrimitiveType: function () {
             return this._schema['@type'];
         },
-        isRequired: function () {
-            return this._schema['@required'] !== false;
-        },
         isEmpty: function () {
             throw new Error('Subclass should override isEmpty()');
+        },
+        isRequired: function () {
+            return this._schema['@required'] !== false;
         }
     }));

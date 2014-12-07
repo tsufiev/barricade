@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-    var Enumerated = Blueprint.create(function(enum_) {
+    Enumerated = Blueprint.create(function(enum_) {
         var self = this;
 
         function getEnum() {
@@ -21,20 +21,16 @@
 
         this.getEnumLabels = function () {
             var curEnum = getEnum();
-            if (getType(curEnum[0]) === Object) {
-                return curEnum.map(function (value) { return value.label; });
-            } else {
-                return curEnum;
-            }
+            return getType(curEnum[0]) === Object
+                ? curEnum.map(function (value) { return value.label; })
+                : curEnum;
         };
 
         this.getEnumValues = function () {
             var curEnum = getEnum();
-            if (getType(curEnum[0]) === Object) {
-                return curEnum.map(function (value) { return value.value; });
-            } else {
-                return curEnum;
-            }
+            return getType(curEnum[0]) === Object
+                ? curEnum.map(function (value) { return value.value; })
+                : curEnum;
         };
 
         this.addConstraint(function (value) {

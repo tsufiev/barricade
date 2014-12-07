@@ -12,17 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-    Omittable = Blueprint.create(function (isUsed) {
-        this.isUsed = function () {
-            return this.isRequired() || isUsed;
-        };
+beforeEach(SAVE_GLOBAL_STATE);
+afterEach(ENSURE_GLOBAL_OBJECT_UNPOLLUTED);
 
-        this.setIsUsed = function (newUsedValue) {
-            isUsed = !!newUsedValue;
-            return this;
-        };
+describe('Extendable', function () {
+    it('should allow schema to be extended', function () {
+        var ObjectClass = Barricade.create({
+            '@type': Object,
+            'a': {'@type': String}
+        }),
+        ExtendedClass = ObjectClass.extend({}, {'b': {'@type': Number}}),
+        instance = ExtendedClass.create({'a': 'foo', 'b': 6});
 
-        this.on('change', function () {
-            isUsed = !this.isEmpty();
-        });
+        expect(instance.getKeys()).toEqual(['a', 'b']);
+        expect(instance.get('a').get()).toEqual('foo');
+        expect(instance.get('b').get()).toEqual(6);
     });
+});

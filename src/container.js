@@ -12,32 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-    var Container = Base.extend({
+    Container = Base.extend({
         create: function (json, parameters) {
-            var self = Base.create.call(this, json, parameters),
-                allDeferred = [];
+            var self = Base.create.call(this, json, parameters);
 
-            function attachListeners(key) {
+            return self.on('_addedElement', function (key) {
                 self._attachListeners(key);
-            }
-
-            self.on('_addedElement', function (key) {
-                attachListeners(key);
                 self._tryResolveOn(self.get(key));
-            });
-
-            self.each(attachListeners);
-
-            self.each(function (index, value) {
+            }).each(function (index, value) {
+                self._attachListeners(index);
                 value.resolveWith(self);
             });
-
-            return self;
-        },
-        _tryResolveOn: function (value) {
-            if (!value.resolveWith(this)) {
-                this.emit('_resolveUp', value);
-            }
         },
         _attachListeners: function (key) {
             var self = this,
@@ -60,7 +45,7 @@
                     'removeFrom': function (container) {
                         if (container === self) {
                             Object.keys(events).forEach(function (eName) {
-                                element.on(eName, events[eName]);
+                                element.off(eName, events[eName]);
                             });
                         }
                     }
@@ -75,21 +60,16 @@
                 ? this._schema[key]['@class']
                 : BarricadeMain.create(this._schema[key]);
         },
-        _keyClassCreate: function (key, keyClass, json, parameters) {
-            return this._schema[key].hasOwnProperty('@factory')
-                ? this._schema[key]['@factory'](json, parameters)
-                : keyClass.create(json, parameters);
-        },
         _isCorrectType: function (instance, class_) {
             var self = this;
 
             function isRefTo() {
                 if (typeof class_._schema['@ref'].to === 'function') {
                     return self._safeInstanceof(instance,
-                                                 class_._schema['@ref'].to());
+                                                class_._schema['@ref'].to());
                 } else if (typeof class_._schema['@ref'].to === 'object') {
                     return self._safeInstanceof(instance,
-                                                 class_._schema['@ref'].to);
+                                                class_._schema['@ref'].to);
                 }
                 throw new Error('Ref.to was ' + class_._schema['@ref'].to);
             }
@@ -97,9 +77,20 @@
             return this._safeInstanceof(instance, class_) ||
                 (class_._schema.hasOwnProperty('@ref') && isRefTo());
         },
+        _keyClassCreate: function (key, keyClass, json, parameters) {
+            return this._schema[key].hasOwnProperty('@factory')
+                ? this._schema[key]['@factory'](json, parameters)
+                : keyClass.create(json, parameters);
+        },
+        _tryResolveOn: function (value) {
+            if (!value.resolveWith(this)) {
+                this.emit('_resolveUp', value);
+            }
+        },
         set: function (key, value) {
             this.get(key).emit('removeFrom', this);
             this._doSet(key, value);
             this._attachListeners(key);
+            return this;
         }
     });
