@@ -63,7 +63,7 @@
             value: function (extension, schema) {
                 if (schema) {
                     extension._schema = deepClone(this._schema) || {};
-                    merge(extension._schema, schema || {});
+                    merge(extension._schema, schema);
                 }
                 return extend.call(this, extension);
             }

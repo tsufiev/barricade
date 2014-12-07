@@ -19,16 +19,14 @@
             return events.hasOwnProperty(eventName);
         }
 
-        // Adds listener for event
         this.on = function (eventName, callback) {
             if (!hasEvent(eventName)) {
                 events[eventName] = [];
             }
-
             events[eventName].push(callback);
+            return this;
         };
 
-        // Removes listener for event
         this.off = function (eventName, callback) {
             var index;
 
@@ -39,6 +37,7 @@
                     events[eventName].splice(index, 1);
                 }
             }
+            return this;
         };
 
         this.emit = function (eventName) {
@@ -49,5 +48,6 @@
                     callback.apply(this, Array.prototype.slice.call(args, 1));
                 }, this);
             }
+            return this;
         };
     });

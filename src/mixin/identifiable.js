@@ -19,6 +19,6 @@
 
         this.setID = function (newID) {
             id = newID;
-            this.emit('change', 'id');
+            return this.emit('change', 'id');
         };
     });

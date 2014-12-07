@@ -27,8 +27,7 @@
                 }
 
                 do {
-                    if (subject === proto ||
-                            hasMixin(subject, proto)) {
+                    if (subject === proto || hasMixin(subject, proto)) {
                         return true;
                     }
                     subject = Object.getPrototypeOf(subject);

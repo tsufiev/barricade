@@ -16,22 +16,13 @@
         create: function (json, parameters) {
             var self = Base.create.call(this, json, parameters);
 
-            function attachListeners(key) {
+            return self.on('_addedElement', function (key) {
                 self._attachListeners(key);
-            }
-
-            self.on('_addedElement', function (key) {
-                attachListeners(key);
                 self._tryResolveOn(self.get(key));
-            });
-
-            self.each(attachListeners);
-
-            self.each(function (index, value) {
+            }).each(function (index, value) {
+                self._attachListeners(index);
                 value.resolveWith(self);
             });
-
-            return self;
         },
         _tryResolveOn: function (value) {
             if (!value.resolveWith(this)) {
@@ -85,10 +76,10 @@
             function isRefTo() {
                 if (typeof class_._schema['@ref'].to === 'function') {
                     return self._safeInstanceof(instance,
-                                                 class_._schema['@ref'].to());
+                                                class_._schema['@ref'].to());
                 } else if (typeof class_._schema['@ref'].to === 'object') {
                     return self._safeInstanceof(instance,
-                                                 class_._schema['@ref'].to);
+                                                class_._schema['@ref'].to);
                 }
                 throw new Error('Ref.to was ' + class_._schema['@ref'].to);
             }
@@ -100,5 +91,6 @@
             this.get(key).emit('removeFrom', this);
             this._doSet(key, value);
             this._attachListeners(key);
+            return this;
         }
     });

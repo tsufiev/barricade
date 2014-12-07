@@ -28,24 +28,23 @@
 
             if (typeMatches(newVal) && this._validate(newVal)) {
                 this._data = newVal;
-                this.emit('validation', 'succeeded');
-                this.emit('change');
+                return this.emit('validation', 'succeeded')
+                           .emit('change');
             } else if (this.hasError()) {
-                this.emit('validation', 'failed');
-            } else {
-                logError("Setter - new value did not match " +
-                          "schema (newVal, schema)");
-                logVal(newVal, schema);
+                return this.emit('validation', 'failed');
             }
+
+            logError("Setter - new value (", newVal, ")",
+                     " did not match schema: ", schema);
+            return this;
         },
         isEmpty: function () {
             if (this._schema['@type'] === Array) {
-                return this._data.length === 0;
+                return !this._data.length;
             } else if (this._schema['@type'] === Object) {
-                return Object.keys(this._data).length === 0;
-            } else {
-                return this._data === this._schema['@type']();
+                return !Object.keys(this._data).length;
             }
+            return this._data === this._schema['@type']();
         },
         toJSON: function () {
             return this._data;

@@ -122,7 +122,6 @@ module.exports = function (grunt) {
                         'Identifiable': false,
                         'InstanceofMixin': false,
                         'logError': false,
-                        'logVal': false,
                         'Observable': false,
                         'Omittable': false,
                         'Validatable': false
@@ -160,7 +159,6 @@ module.exports = function (grunt) {
                         'Container': false,
                         'ImmutableObject': true,
                         'logError': false,
-                        'logVal': false
                     }
                 }
             }, {
@@ -170,7 +168,6 @@ module.exports = function (grunt) {
                         'Arraylike': false,
                         'getType': false,
                         'logError': false,
-                        'logVal': false,
                         'MutableObject': true
                     }
                 }
@@ -181,7 +178,6 @@ module.exports = function (grunt) {
                         'Base': false,
                         'getType': false,
                         'logError': false,
-                        'logVal': false,
                         'Primitive': true
                     }
                 }
@@ -190,7 +186,6 @@ module.exports = function (grunt) {
                 jshint: {
                     exported: [
                         'logError',
-                        'logVal'
                     ],
                     globals: {
                         'Array_': false,

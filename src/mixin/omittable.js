@@ -14,12 +14,12 @@
 
     Omittable = Blueprint.create(function (isUsed) {
         this.isUsed = function () {
-            // If required, it has to be used.
             return this.isRequired() || isUsed;
         };
 
         this.setIsUsed = function (newUsedValue) {
             isUsed = !!newUsedValue;
+            return this;
         };
 
         this.on('change', function () {

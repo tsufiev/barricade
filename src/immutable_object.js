@@ -53,8 +53,8 @@
 
                 this.emit('change', 'set', key, this._data[key], oldVal);
             } else {
-                logError('object does not have key (key, schema)');
-                logVal(key, this._schema);
+                logError('object does not have key: ', key,
+                         ' schema: ', this._schema);
             }
         },
         each: function (functionIn, comparatorIn) {
@@ -68,9 +68,11 @@
             keys.forEach(function (key) {
                 functionIn(key, self._data[key]);
             });
+
+            return this;
         },
         isEmpty: function () {
-            return !!Object.keys(this._data).length;
+            return !Object.keys(this._data).length;
         },
         toJSON: function (ignoreUnused) {
             var data = this._data;

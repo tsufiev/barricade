@@ -51,8 +51,8 @@
 
             if (getType(json) !== type) {
                 if (json) {
-                    logError("Type mismatch (json, schema)");
-                    logVal(json, this._schema);
+                    logError("Type mismatch. JSON: ", json,
+                             "schema: ", this._schema);
                 } else {
                     isUsed = false;
                 }

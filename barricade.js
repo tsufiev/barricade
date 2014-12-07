@@ -83,7 +83,7 @@ var Barricade = (function () {
             value: function (extension, schema) {
                 if (schema) {
                     extension._schema = deepClone(this._schema) || {};
-                    merge(extension._schema, schema || {});
+                    merge(extension._schema, schema);
                 }
                 return extend.call(this, extension);
             }
@@ -105,8 +105,7 @@ var Barricade = (function () {
                 }
 
                 do {
-                    if (subject === proto ||
-                            hasMixin(subject, proto)) {
+                    if (subject === proto || hasMixin(subject, proto)) {
                         return true;
                     }
                     subject = Object.getPrototypeOf(subject);
@@ -124,18 +123,18 @@ var Barricade = (function () {
 
         this.setID = function (newID) {
             id = newID;
-            this.emit('change', 'id');
+            return this.emit('change', 'id');
         };
     });
 
     Omittable = Blueprint.create(function (isUsed) {
         this.isUsed = function () {
-            // If required, it has to be used.
             return this.isRequired() || isUsed;
         };
 
         this.setIsUsed = function (newUsedValue) {
             isUsed = !!newUsedValue;
+            return this;
         };
 
         this.on('change', function () {
@@ -150,8 +149,7 @@ var Barricade = (function () {
         function resolver(neededValue) {
             var ref = schema['@ref'].resolver(self, neededValue);
             if (ref === undefined) {
-                logError('Could not resolve "' + 
-                          JSON.stringify(self.toJSON()) + '"');
+                logError('Could not resolve ', JSON.stringify(self.toJSON()));
             }
             return ref;
         }
@@ -209,6 +207,7 @@ var Barricade = (function () {
 
         this.addConstraint = function (newConstraint) {
             constraints.push(newConstraint);
+            return this;
         };
     });
 
@@ -221,20 +220,16 @@ var Barricade = (function () {
 
         this.getEnumLabels = function () {
             var curEnum = getEnum();
-            if (getType(curEnum[0]) === Object) {
-                return curEnum.map(function (value) { return value.label; });
-            } else {
-                return curEnum;
-            }
+            return getType(curEnum[0]) === Object
+                ? curEnum.map(function (value) { return value.label; })
+                : curEnum;
         };
 
         this.getEnumValues = function () {
             var curEnum = getEnum();
-            if (getType(curEnum[0]) === Object) {
-                return curEnum.map(function (value) { return value.value; });
-            } else {
-                return curEnum;
-            }
+            return getType(curEnum[0]) === Object
+                ? curEnum.map(function (value) { return value.value; })
+                : curEnum;
         };
 
         this.addConstraint(function (value) {
@@ -250,16 +245,14 @@ var Barricade = (function () {
             return events.hasOwnProperty(eventName);
         }
 
-        // Adds listener for event
         this.on = function (eventName, callback) {
             if (!hasEvent(eventName)) {
                 events[eventName] = [];
             }
-
             events[eventName].push(callback);
+            return this;
         };
 
-        // Removes listener for event
         this.off = function (eventName, callback) {
             var index;
 
@@ -270,6 +263,7 @@ var Barricade = (function () {
                     events[eventName].splice(index, 1);
                 }
             }
+            return this;
         };
 
         this.emit = function (eventName) {
@@ -280,6 +274,7 @@ var Barricade = (function () {
                     callback.apply(this, Array.prototype.slice.call(args, 1));
                 }, this);
             }
+            return this;
         };
     });
 
@@ -352,8 +347,8 @@ var Barricade = (function () {
 
             if (getType(json) !== type) {
                 if (json) {
-                    logError("Type mismatch (json, schema)");
-                    logVal(json, this._schema);
+                    logError("Type mismatch. JSON: ", json,
+                             "schema: ", this._schema);
                 } else {
                     isUsed = false;
                 }
@@ -394,22 +389,13 @@ var Barricade = (function () {
         create: function (json, parameters) {
             var self = Base.create.call(this, json, parameters);
 
-            function attachListeners(key) {
+            return self.on('_addedElement', function (key) {
                 self._attachListeners(key);
-            }
-
-            self.on('_addedElement', function (key) {
-                attachListeners(key);
                 self._tryResolveOn(self.get(key));
-            });
-
-            self.each(attachListeners);
-
-            self.each(function (index, value) {
+            }).each(function (index, value) {
+                self._attachListeners(index);
                 value.resolveWith(self);
             });
-
-            return self;
         },
         _tryResolveOn: function (value) {
             if (!value.resolveWith(this)) {
@@ -463,10 +449,10 @@ var Barricade = (function () {
             function isRefTo() {
                 if (typeof class_._schema['@ref'].to === 'function') {
                     return self._safeInstanceof(instance,
-                                                 class_._schema['@ref'].to());
+                                                class_._schema['@ref'].to());
                 } else if (typeof class_._schema['@ref'].to === 'object') {
                     return self._safeInstanceof(instance,
-                                                 class_._schema['@ref'].to);
+                                                class_._schema['@ref'].to);
                 }
                 throw new Error('Ref.to was ' + class_._schema['@ref'].to);
             }
@@ -478,6 +464,7 @@ var Barricade = (function () {
             this.get(key).emit('removeFrom', this);
             this._doSet(key, value);
             this._attachListeners(key);
+            return this;
         }
     });
 
@@ -490,14 +477,13 @@ var Barricade = (function () {
                     value: this._getKeyClass(this._elSymbol)
                 });
             }
-
             return Container.create.call(this, json, parameters);
         },
         _elSymbol: '*',
         _sift: function (json) {
             return json.map(function (el) {
-                return this._keyClassCreate(this._elSymbol,
-                                            this._elementClass, el);
+                return this._keyClassCreate(
+                    this._elSymbol, this._elementClass, el);
             }, this);
         }, 
         get: function (index) {
@@ -513,6 +499,8 @@ var Barricade = (function () {
             arr.forEach(function (value, index) {
                 functionIn(index, value);
             });
+
+            return this;
         },
         toArray: function () {
             return this._data.slice(); // Shallow copy to prevent mutation
@@ -531,7 +519,7 @@ var Barricade = (function () {
             return this._data.length;
         },
         isEmpty: function () {
-            return this._data.length === 0;
+            return !this._data.length;
         },
         toJSON: function (ignoreUnused) {
             return this._data.map(function (el) {
@@ -545,13 +533,13 @@ var Barricade = (function () {
                     : this._keyClassCreate(this._elSymbol, this._elementClass,
                                            newValue, newParameters));
 
-            this.emit('_addedElement', this._data.length - 1);
-            this.emit('change', 'add', this._data.length - 1);
+            return this.emit('_addedElement', this._data.length - 1)
+                       .emit('change', 'add', this._data.length - 1);
         },
         remove: function (index) {
             this._data[index].emit('removeFrom', this);
             this._data.splice(index, 1);
-            this.emit('change', 'remove', index);
+            return this.emit('change', 'remove', index);
         }
     });
 
@@ -598,8 +586,8 @@ var Barricade = (function () {
 
                 this.emit('change', 'set', key, this._data[key], oldVal);
             } else {
-                logError('object does not have key (key, schema)');
-                logVal(key, this._schema);
+                logError('object does not have key: ', key,
+                         ' schema: ', this._schema);
             }
         },
         each: function (functionIn, comparatorIn) {
@@ -613,9 +601,11 @@ var Barricade = (function () {
             keys.forEach(function (key) {
                 functionIn(key, self._data[key]);
             });
+
+            return this;
         },
         isEmpty: function () {
-            return !!Object.keys(this._data).length;
+            return !Object.keys(this._data).length;
         },
         toJSON: function (ignoreUnused) {
             var data = this._data;
@@ -671,10 +661,9 @@ var Barricade = (function () {
             if (!this._safeInstanceof(newJson, this._elementClass) &&
                     (getType(newParameters) !== Object ||
                     !newParameters.hasOwnProperty('id'))) {
-                logError('ID should be passed in ' + 
-                          'with parameters object');
+                logError('ID should be passed in with parameters object');
             } else {
-                Arraylike.push.call(this, newJson, newParameters);
+                return Arraylike.push.call(this, newJson, newParameters);
             }
         },
     });
@@ -695,24 +684,23 @@ var Barricade = (function () {
 
             if (typeMatches(newVal) && this._validate(newVal)) {
                 this._data = newVal;
-                this.emit('validation', 'succeeded');
-                this.emit('change');
+                return this.emit('validation', 'succeeded')
+                           .emit('change');
             } else if (this.hasError()) {
-                this.emit('validation', 'failed');
-            } else {
-                logError("Setter - new value did not match " +
-                          "schema (newVal, schema)");
-                logVal(newVal, schema);
+                return this.emit('validation', 'failed');
             }
+
+            logError("Setter - new value (", newVal, ")",
+                     " did not match schema: ", schema);
+            return this;
         },
         isEmpty: function () {
             if (this._schema['@type'] === Array) {
-                return this._data.length === 0;
+                return !this._data.length;
             } else if (this._schema['@type'] === Object) {
-                return Object.keys(this._data).length === 0;
-            } else {
-                return this._data === this._schema['@type']();
+                return !Object.keys(this._data).length;
             }
+            return this._data === this._schema['@type']();
         },
         toJSON: function () {
             return this._data;
@@ -738,16 +726,9 @@ var Barricade = (function () {
         };
     }());
 
-    function logError(msg) {
-        console.error("Barricade: " + msg);
-    }
-
-    function logVal(val1, val2) {
-        if (val2) {
-            console.log(val1, val2);
-        } else {
-            console.log(val1);
-        }
+    function logError() {
+        console.error.apply(console, Array.prototype.slice.call(arguments)
+                                          .unshift('Barricade: '));
     }
 
     BarricadeMain = {
@@ -777,14 +758,13 @@ var Barricade = (function () {
             }
 
             if (schema['@type'] === Object && schemaIsImmutable()) {
-                return ImmutableObject.extend({_schema: schema});
+                return ImmutableObject.extend({}, schema);
             } else if (schema['@type'] === Object && schemaIsMutable()) {
-                return MutableObject.extend({_schema: schema});
+                return MutableObject.extend({}, schema);
             } else if (schema['@type'] === Array && '*' in schema) {
-                return Array_.extend({_schema: schema});
-            } else {
-                return Primitive.extend({_schema: schema});
+                return Array_.extend({}, schema);
             }
+            return Primitive.extend({}, schema);
         }
     };
 

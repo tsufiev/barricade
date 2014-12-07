@@ -50,10 +50,9 @@
             if (!this._safeInstanceof(newJson, this._elementClass) &&
                     (getType(newParameters) !== Object ||
                     !newParameters.hasOwnProperty('id'))) {
-                logError('ID should be passed in ' + 
-                          'with parameters object');
+                logError('ID should be passed in with parameters object');
             } else {
-                Arraylike.push.call(this, newJson, newParameters);
+                return Arraylike.push.call(this, newJson, newParameters);
             }
         },
     });

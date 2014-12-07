@@ -31,16 +31,9 @@
         };
     }());
 
-    function logError(msg) {
-        console.error("Barricade: " + msg);
-    }
-
-    function logVal(val1, val2) {
-        if (val2) {
-            console.log(val1, val2);
-        } else {
-            console.log(val1);
-        }
+    function logError() {
+        console.error.apply(console, Array.prototype.slice.call(arguments)
+                                          .unshift('Barricade: '));
     }
 
     BarricadeMain = {
@@ -70,14 +63,13 @@
             }
 
             if (schema['@type'] === Object && schemaIsImmutable()) {
-                return ImmutableObject.extend({_schema: schema});
+                return ImmutableObject.extend({}, schema);
             } else if (schema['@type'] === Object && schemaIsMutable()) {
-                return MutableObject.extend({_schema: schema});
+                return MutableObject.extend({}, schema);
             } else if (schema['@type'] === Array && '*' in schema) {
-                return Array_.extend({_schema: schema});
-            } else {
-                return Primitive.extend({_schema: schema});
+                return Array_.extend({}, schema);
             }
+            return Primitive.extend({}, schema);
         }
     };
 

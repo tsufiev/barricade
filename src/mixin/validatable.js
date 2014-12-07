@@ -38,5 +38,6 @@
 
         this.addConstraint = function (newConstraint) {
             constraints.push(newConstraint);
+            return this;
         };
     });

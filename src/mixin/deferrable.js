@@ -19,8 +19,7 @@
         function resolver(neededValue) {
             var ref = schema['@ref'].resolver(self, neededValue);
             if (ref === undefined) {
-                logError('Could not resolve "' + 
-                          JSON.stringify(self.toJSON()) + '"');
+                logError('Could not resolve ', JSON.stringify(self.toJSON()));
             }
             return ref;
         }

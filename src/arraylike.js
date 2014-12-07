@@ -21,14 +21,13 @@
                     value: this._getKeyClass(this._elSymbol)
                 });
             }
-
             return Container.create.call(this, json, parameters);
         },
         _elSymbol: '*',
         _sift: function (json) {
             return json.map(function (el) {
-                return this._keyClassCreate(this._elSymbol,
-                                            this._elementClass, el);
+                return this._keyClassCreate(
+                    this._elSymbol, this._elementClass, el);
             }, this);
         }, 
         get: function (index) {
@@ -44,6 +43,8 @@
             arr.forEach(function (value, index) {
                 functionIn(index, value);
             });
+
+            return this;
         },
         toArray: function () {
             return this._data.slice(); // Shallow copy to prevent mutation
@@ -62,7 +63,7 @@
             return this._data.length;
         },
         isEmpty: function () {
-            return this._data.length === 0;
+            return !this._data.length;
         },
         toJSON: function (ignoreUnused) {
             return this._data.map(function (el) {
@@ -76,12 +77,12 @@
                     : this._keyClassCreate(this._elSymbol, this._elementClass,
                                            newValue, newParameters));
 
-            this.emit('_addedElement', this._data.length - 1);
-            this.emit('change', 'add', this._data.length - 1);
+            return this.emit('_addedElement', this._data.length - 1)
+                       .emit('change', 'add', this._data.length - 1);
         },
         remove: function (index) {
             this._data[index].emit('removeFrom', this);
             this._data.splice(index, 1);
-            this.emit('change', 'remove', index);
+            return this.emit('change', 'remove', index);
         }
     });

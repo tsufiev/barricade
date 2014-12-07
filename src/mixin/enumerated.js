@@ -21,20 +21,16 @@
 
         this.getEnumLabels = function () {
             var curEnum = getEnum();
-            if (getType(curEnum[0]) === Object) {
-                return curEnum.map(function (value) { return value.label; });
-            } else {
-                return curEnum;
-            }
+            return getType(curEnum[0]) === Object
+                ? curEnum.map(function (value) { return value.label; })
+                : curEnum;
         };
 
         this.getEnumValues = function () {
             var curEnum = getEnum();
-            if (getType(curEnum[0]) === Object) {
-                return curEnum.map(function (value) { return value.value; });
-            } else {
-                return curEnum;
-            }
+            return getType(curEnum[0]) === Object
+                ? curEnum.map(function (value) { return value.value; })
+                : curEnum;
         };
 
         this.addConstraint(function (value) {
