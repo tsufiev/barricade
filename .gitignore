@@ -1,4 +1,4 @@
-*.html
+_SpecRunner.html
 *.swp
 .DS_Store
 node_modules/
