@@ -305,6 +305,16 @@ module.exports = function (grunt) {
                     ],
                     keepRunner: true
                 }
+            },
+            jsdoc: {
+                barricade: {
+                    src: ['barricade.js'], 
+                    dest: 'doc',
+                    options: {
+                        template: 'jsdoc/template',
+                        config: 'jsdoc/conf.json'
+                    }
+                }
             }
         };
 
@@ -313,6 +323,7 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-contrib-concat');
     grunt.loadNpmTasks('grunt-contrib-jshint');
     grunt.loadNpmTasks('grunt-contrib-jasmine');
+    grunt.loadNpmTasks('grunt-jsdoc');
 
     grunt.registerTask('lintsrc', 'Lint individual source files', function (i) {
         i = +i;
@@ -340,8 +351,10 @@ module.exports = function (grunt) {
         'jshint:barricade',
         'jshint:global_state_check',
         'jshint:test',
-        'jasmine'
+        'jasmine',
+        'jsdoc'
     ]);
 
     grunt.registerTask('unit', ['jasmine']);
+    grunt.registerTask('doc', ['concat:barricade', 'jsdoc']);
 };
