@@ -12,13 +12,39 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+    /**
+    * @class
+    * @memberof Barricade
+    * @extends Barricade.Base
+    */
     Primitive = Base.extend({
+        /**
+        * @memberof Barricade.Primitive
+        * @private
+        */
         _sift: function (json) {
             return json;
         },
+
+        /**
+        * Retrieves the Primitive's value.
+        * @memberof Barricade.Primitive
+        * @instance
+        * @returns {JSON}
+        */
         get: function () {
             return this._data;
         },
+
+        /**
+        * Returns true if the Primitive's data is empty. This depends on the
+          type; Arrays and Objects are considered empty if they have no
+          elements, while Strings, Numbers, and Booleans are empty if they are
+          equivalent to a newly-constructed instance.
+        * @memberof Barricade.Primitive
+        * @instance
+        * @returns {Boolean}
+        */
         isEmpty: function () {
             if (this._schema['@type'] === Array) {
                 return !this._data.length;
@@ -27,6 +53,13 @@
             }
             return this._data === this._schema['@type']();
         },
+
+        /**
+        * @memberof Barricade.Primitive
+        * @instance
+        * @param newVal
+        * @returns {self}
+        */
         set: function (newVal) {
             var schema = this._schema;
 
@@ -46,6 +79,13 @@
                      " did not match schema: ", schema);
             return this;
         },
+
+        /**
+        * Converts the Primitive to JSON (which is simply the value itself).
+        * @memberof Barricade.Primitive
+        * @instance
+        * @returns {JSON}
+        */
         toJSON: function () {
             return this._data;
         }

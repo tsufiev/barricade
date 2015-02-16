@@ -12,6 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+    /**
+    * Defines a constraint on the possible values a Barricade object can take.
+      Enums can be defined simply as an array of values or an array of objects
+      of the form `{label: someLabel, value: someValue}`.
+    * @mixin
+    * @memberof Barricade
+    */
     Enumerated = Blueprint.create(function(enum_) {
         var self = this;
 
@@ -19,6 +26,15 @@
             return (typeof enum_ === 'function') ? enum_.call(self) : enum_;
         }
 
+        /**
+        * Returns an array of labels. If the enum has defined labels, those are
+          returned. If the enum is simply a set of values, the values are
+          returned as the labels.
+        * @method getEnumLabels
+        * @memberof Barricade.Enumerated
+        * @instance
+        * @returns {Array}
+        */
         this.getEnumLabels = function () {
             var curEnum = getEnum();
             return getType(curEnum[0]) === Object
@@ -26,6 +42,13 @@
                 : curEnum;
         };
 
+        /**
+        * Returns an array of only the enum's values.
+        * @method getEnumValues
+        * @memberof Barricade.Enumerated
+        * @instance
+        * @returns {Array}
+        */
         this.getEnumValues = function () {
             var curEnum = getEnum();
             return getType(curEnum[0]) === Object

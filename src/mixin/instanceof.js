@@ -12,6 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+    /**
+    * @mixin
+    * @memberof Barricade
+    */
     InstanceofMixin = Blueprint.create(function () {
         return Object.defineProperty(this, 'instanceof', {
             enumerable: false,

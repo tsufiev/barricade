@@ -12,7 +12,34 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+    /**
+    * @class
+    * @memberof Barricade
+    * @mixes   Barricade.Extendable
+    * @extends Barricade.Extendable
+    * @mixes   Barricade.InstanceofMixin
+    * @extends Barricade.InstanceofMixin
+    * @mixes   Barricade.Observable
+    * @extends Barricade.Observable
+    * @mixes   Barricade.Omittable
+    * @extends Barricade.Omittable
+    * @mixes   Barricade.Deferrable
+    * @extends Barricade.Deferrable
+    * @mixes   Barricade.Validatable
+    * @extends Barricade.Validatable
+    * @mixes   Barricade.Enumerated
+    * @extends Barricade.Enumerated
+    * @mixes   Barricade.Identifiable
+    * @extends Barricade.Identifiable
+    */
     Base = Extendable.call(InstanceofMixin.call({
+        /**
+        * Creates a `Base` instance
+        * @memberof Barricade.Base
+        * @param {JSON} json
+        * @param {Object} parameters
+        * @returns {Barricade.Base}
+        */
         create: function (json, parameters) {
             var self = this.extend({}),
                 schema = self._schema,
@@ -45,6 +72,11 @@
 
             return self;
         },
+
+        /**
+        * @memberof Barricade.Base
+        * @private
+        */
         _getDefaultValue: function () {
             return this._schema.hasOwnProperty('@default')
                 ? typeof this._schema['@default'] === 'function'
@@ -52,6 +84,11 @@
                     : this._schema['@default']
                 : this._schema['@type']();
         },
+
+        /**
+        * @memberof Barricade.Base
+        * @private
+        */
         _setData: function(json) {
             var isUsed = true,
                 type = this._schema['@type'];
@@ -70,20 +107,52 @@
 
             return isUsed;
         },
+
+        /**
+        * @memberof Barricade.Base
+        * @private
+        */
         _safeInstanceof: function (instance, class_) {
             return typeof instance === 'object' &&
                 ('instanceof' in instance) &&
                 instance.instanceof(class_);
         },
+
+        /**
+        * @memberof Barricade.Base
+        * @private
+        */
         _sift: function () {
             throw new Error("sift() must be overridden in subclass");
         },
+
+        /**
+        * Returns the primitive type of the Barricade object.
+        * @memberof Barricade.Base
+        * @instance
+        * @returns {constructor}
+        */
         getPrimitiveType: function () {
             return this._schema['@type'];
         },
+
+        /**
+        * @memberof Barricade.Base
+        * @instance
+        * @virtual
+        */
         isEmpty: function () {
             throw new Error('Subclass should override isEmpty()');
         },
+
+        /**
+        * Returns whether the Barricade object is required or not. Usually
+          affects output of `toJSON()`. Use the `@required` tag in the schema to
+          specify this option.
+        * @memberof Barricade.Base
+        * @instance
+        * @returns {Boolean}
+        */
         isRequired: function () {
             return this._schema['@required'] !== false;
         }

@@ -12,7 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+    /**
+    * @class
+    * @memberof Barricade
+    */
     Deferred = {
+        /**
+        * @memberof Barricade.Deferred
+        * @instance
+        * @param {Function} classGetter
+        * @param {Function} onResolve
+                 Callback to execute when resolve happens.
+        * @returns {Barricade.Deferred}
+        */
         create: function (classGetter, onResolve) {
             var self = Object.create(this);
             self._isResolved = false;
@@ -20,12 +32,31 @@
             self._onResolve = onResolve;
             return self;
         },
+
+        /**
+        * @memberof Barricade.Deferred
+        * @instance
+        * @returns {Boolean}
+        */
         isResolved: function () {
             return this._isResolved;
         },
+
+        /**
+        * @memberof Barricade.Deferred
+        * @instance
+        * @param obj
+        * @returns {Boolean}
+        */
         needs: function (obj) {
             return obj.instanceof(this._classGetter());
         },
+
+        /**
+        * @memberof Barricade.Deferred
+        * @instance
+        * @param obj
+        */
         resolve: function (obj) {
             var ref;
 

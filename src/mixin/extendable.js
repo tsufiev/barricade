@@ -12,6 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+    /**
+    * @mixin
+    * @memberof Barricade
+    */
     Extendable = Blueprint.create(function () {
         function deepClone(object) {
             if (isPlainObject(object)) {
@@ -57,6 +61,17 @@
             });
         }
 
+        /**
+        * Extends the object, returning a new object with the original object as
+          its prototype.
+        * @method extend
+        * @memberof Barricade.Extendable
+        * @instance
+        * @param {Object} extension A set of properties to add to the new
+                 object.
+        * @param {Object} [schema] Barricade schema.
+        * @returns {Object}
+        */
         return Object.defineProperty(this, 'extend', {
             enumerable: false,
             writable: false,

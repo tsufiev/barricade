@@ -12,6 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+    /**
+    * @mixin
+    * @memberof Barricade
+    */
     Observable = Blueprint.create(function () {
         var events = {};
 
@@ -19,6 +23,15 @@
             return events.hasOwnProperty(eventName);
         }
 
+        /**
+        * Executes all callbacks associated with an event in the order that they
+          were added.
+        * @method emit
+        * @memberof Barricade.Observable
+        * @instance
+        * @param {String} eventName
+        * @returns {self}
+        */
         this.emit = function (eventName) {
             var args = arguments; // Must come from correct scope
             if (events.hasOwnProperty(eventName)) {
@@ -30,6 +43,15 @@
             return this;
         };
 
+        /**
+        * Removes a callback for a particular event.
+        * @method off
+        * @memberof Barricade.Observable
+        * @instance
+        * @param {String} eventName
+        * @param {Function} callback
+        * @returns {self}
+        */
         this.off = function (eventName, callback) {
             var index;
 
@@ -43,6 +65,16 @@
             return this;
         };
 
+        /**
+        * Specifies a callback to be executed when the Observable emits
+          a particular event
+        * @method on
+        * @memberof Barricade.Observable
+        * @instance
+        * @param {String} eventName
+        * @param {Function} callback
+        * @returns {self}
+        */
         this.on = function (eventName, callback) {
             if (!hasEvent(eventName)) {
                 events[eventName] = [];

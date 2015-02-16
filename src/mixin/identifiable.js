@@ -12,11 +12,33 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+    /**
+    * Attaches an identifier to an object. Used as an alternative to key/value
+      pairs in JSON objects when the key is user-defined. This way the key (ID)
+      stays with the value.
+    * @mixin
+    * @memberof Barricade
+    */
     Identifiable = Blueprint.create(function (id) {
+        /**
+        * Returns the ID
+        * @method getID
+        * @memberof Barricade.Identifiable
+        * @instance
+        * @returns {String}
+        */
         this.getID = function () {
             return id;
         };
 
+        /**
+        * Sets the ID.
+        * @method setID
+        * @memberof Barricade.Identifiable
+        * @instance
+        * @param {String} newID
+        * @returns {self}
+        */
         this.setID = function (newID) {
             id = newID;
             return this.emit('change', 'id');
