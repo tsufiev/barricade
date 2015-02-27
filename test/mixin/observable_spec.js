@@ -24,6 +24,14 @@ describe('Observable', function () {
         };
     }
 
+    function getCallbackWithArgs(name, storageObj) {
+      storageObj[name] = [];
+
+      return function() {
+        storageObj[name].push(Array.prototype.slice.call(arguments));
+      };
+    }
+
     it('.off should remove listeners', function () {
         var namespace = {},
             calls = {},
@@ -163,6 +171,24 @@ describe('Observable', function () {
             this.instance.get('a').get('aa').get('aaa').set('abc');
 
             expect(this.calls.childChange).toBe(3);
+        });
+
+        it('should emit calls with every argument passed below', function () {
+            var childChange = getCallbackWithArgs('childChange', this.calls),
+              bottomChild = this.instance.get('a').get('aa').get('aaa');
+
+            // Attach listeners
+            this.instance.on('childChange', childChange);
+            this.instance.get('a').on('childChange', childChange);
+            this.instance.get('a').get('aa').on('childChange',
+              childChange);
+
+            // Manually trigger listeners with emit
+            bottomChild.emit('change', 'more', 'args', 42);
+
+            this.calls.childChange.forEach(function(actualArgs) {
+              expect(actualArgs).toEqual([bottomChild, 'more', 'args', 42]);
+            });
         });
     });
 });
