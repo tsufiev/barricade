@@ -66,9 +66,7 @@
                 Enumerated.call(self, schema['@enum']);
             }
 
-            if (parameters.hasOwnProperty('id')) {
-                Identifiable.call(self, parameters.id);
-            }
+            Identifiable.call(self, parameters.id);
 
             return self;
         },
