@@ -12,30 +12,88 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+    /**
+    * @class
+    * @memberof Barricade
+    * @extends Barricade.Arraylike
+    */
     MutableObject = Arraylike.extend({
+        /**
+        * @memberof Barricade.MutableObject
+        * @private
+        */
         _elSymbol: '?',
+
+        /**
+        * @memberof Barricade.MutableObject
+        * @private
+        */
         _sift: function (json) {
             return Object.keys(json).map(function (key) {
                 return this._keyClassCreate(this._elSymbol, this._elementClass,
                                             json[key], {id: key});
             }, this);
         },
+
+        /**
+        * Returns true if MutableObject contains `element`, false otherwise.
+        * @memberof Barricade.MutableObject
+        * @instance
+        * @param element Element to check for.
+        * @returns {Boolean}
+        */
         contains: function (element) {
             return this.toArray().some(function (value) {
                 return element === value;
             });
         },
+
+        /**
+        * Retrieves element with specified ID.
+        * @memberof Barricade.MutableObject
+        * @instance
+        * @param {String} id
+        * @returns {Element}
+        */
         getByID: function (id) {
             return this.get(this.getPosByID(id));
         },
+
+        /**
+        * Returns an array of the IDs of the elements of the MutableObject.
+        * @memberof Barricade.MutableObject
+        * @instance
+        * @returns {Array}
+        */
         getIDs: function () {
             return this.toArray().map(function (value) {
                 return value.getID();
             });
         },
+
+        /**
+        * Returns index of the element with the specified ID.
+        * @memberof Barricade.MutableObject
+        * @instance
+        * @param {String} id
+        * @returns {Integer}
+        */
         getPosByID: function (id) {
             return this.getIDs().indexOf(id);
         },
+
+        /**
+        * Adds a new element to the MutableObject.
+        * @memberof Barricade.MutableObject
+        * @instance
+        * @param {JSON|Element} newJson
+                 JSON in the form that the element schema expects, or an
+                 instance of the MutableObject's element class.
+        * @param {Object} [newParameters]
+                 If JSON was passed in for newJson, a parameters object with at
+                 least an `id` property is required.
+        * @returns {self}
+        */
         push: function (newJson, newParameters) {
             if (!this._safeInstanceof(newJson, this._elementClass) &&
                     (getType(newParameters) !== Object ||
@@ -45,6 +103,18 @@
                 return Arraylike.push.call(this, newJson, newParameters);
             }
         },
+
+        /**
+        * Converts the MutableObject and all of its elements to JSON.
+        * @memberof Barricade.MutableObject
+        * @instance
+        * @param {Boolean} [ignoreUnused]
+                 Whether to include unused entries. If true, elements that are
+                 unused will not be included in the return value. This parameter
+                 is also passed to each element's `toJSON()` method.
+        * @returns {Object} JSON object containing JSON representations of each
+                   element.
+        */
         toJSON: function (ignoreUnused) {
             return this.toArray().reduce(function (jsonOut, element) {
                 if (jsonOut.hasOwnProperty(element.getID())) {

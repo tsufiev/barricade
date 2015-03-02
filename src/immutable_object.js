@@ -12,6 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+    /**
+    * @class
+    * @memberof Barricade
+    * @extends Barricade.Container
+    */
     ImmutableObject = Container.extend({
         create: function (json, parameters) {
             var self = this;
@@ -28,6 +33,11 @@
 
             return Container.create.call(this, json, parameters);
         },
+
+        /**
+        * @memberof Barricade.ImmutableObject
+        * @private
+        */
         _sift: function (json) {
             var self = this;
             return this.getKeys().reduce(function (objOut, key) {
@@ -36,6 +46,11 @@
                 return objOut;
             }, {});
         },
+
+        /**
+        * @memberof Barricade.ImmutableObject
+        * @private
+        */
         _doSet: function (key, newValue, newParameters) {
             var oldVal = this._data[key];
 
@@ -54,6 +69,23 @@
                          ' schema: ', this._schema);
             }
         },
+
+        /**
+        * @callback Barricade.ImmutableObject.eachCB
+        * @param {String} key
+        * @param {Element} value
+                 Instance of the ImmutableObject's Element class at index
+        */
+
+        /**
+        * @memberof Barricade.ImmutableObject
+        * @instance
+        * @param {Barricade.ImmutableObject.eachCB} functionIn
+                 A function to be called for each element in the array
+        * @param {Function} comparatorIn
+                 Comparator in the form that JavaScript's Array.sort() expects
+        * @returns {self}
+        */
         each: function (functionIn, comparatorIn) {
             var self = this,
                 keys = this.getKeys();
@@ -68,17 +100,48 @@
 
             return this;
         },
+
+        /**
+        * @memberof Barricade.Arraylike
+        * @instance
+        * @param {String} key
+        * @returns {Element}
+        */
         get: function (key) {
             return this._data[key];
         },
+
+        /**
+        * Returns all keys in the ImmutableObject
+        * @memberof Barricade.ImmutableObject
+        * @instance
+        * @returns {Array}
+        */
         getKeys: function () {
             return Object.keys(this._schema).filter(function (key) {
                 return key.charAt(0) !== '@';
             });
         },
+
+        /**
+        * Returns true if ImmutableObject has no keys, false otherwise.
+        * @memberof Barricade.ImmutableObject
+        * @instance
+        * @returns {Boolean}
+        */
         isEmpty: function () {
             return !Object.keys(this._data).length;
         },
+
+        /**
+        * @memberof Barricade.ImmutableObject
+        * @instance
+        * @param {Boolean} [ignoreUnused]
+                 Whether to include unused entries. If true, unused values will
+                 not have their key/value pairs show up in the resulting JSON.
+        * @returns {Object} JSON representation of the ImmutableObject and its
+                   values.
+        */
         toJSON: function (ignoreUnused) {
             var data = this._data;
             return this.getKeys().reduce(function (jsonOut, key) {

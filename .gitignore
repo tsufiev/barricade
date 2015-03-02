@@ -1,6 +1,7 @@
-*.html
+_SpecRunner.html
 *.swp
 .DS_Store
 node_modules/
 .grunt/
 .idea/
+npm-debug.log

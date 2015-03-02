@@ -12,4 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+    /**
+    * Array_ is provided to simply differentiate between Barricade arrays and
+    * other classes that are array-like, such as MutableObject.
+    * @class
+    * @extends Barricade.Arraylike
+    * @memberof Barricade
+    */
     Array_ = Arraylike.extend({});

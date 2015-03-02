@@ -12,7 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+    /**
+    * @class
+    * @memberof Barricade
+    * @extends Barricade.Base
+    */
     Container = Base.extend({
+        /**
+        * Creates a `Container` instance.
+        * @memberof Barricade.Container
+        * @param {JSON} json
+        * @param {Object} parameters
+        * @returns {Barricade.Container}
+        */
         create: function (json, parameters) {
             var self = Base.create.call(this, json, parameters);
 
@@ -24,16 +36,24 @@
                 value.resolveWith(self);
             });
         },
+
+        /**
+        * @memberof Barricade.Container
+        * @private
+        */
         _attachListeners: function (key) {
             var self = this,
                 element = this.get(key),
+                slice = Array.prototype.slice,
                 events = {
-                    'childChange': function (child) {
-                        self.emit('childChange', child);
+                    'childChange': function () {
+                        self.emit.apply(self,
+                          ['childChange'].concat(slice.call(arguments)));
                     },
                     'change': function () {
                         // 'this' is set to callee, no typo
-                        events.childChange(this);
+                        events.childChange.apply(events,
+                          [this].concat(slice.call(arguments)));
                     },
                     'replace': function (newValue) {
                         self.set(key, newValue);
@@ -55,11 +75,21 @@
                 element.on(eName, events[eName]);
             });
         },
+
+        /**
+        * @memberof Barricade.Container
+        * @private
+        */
         _getKeyClass: function (key) {
             return this._schema[key].hasOwnProperty('@class')
                 ? this._schema[key]['@class']
                 : BarricadeMain.create(this._schema[key]);
         },
+
+        /**
+        * @memberof Barricade.Container
+        * @private
+        */
         _isCorrectType: function (instance, class_) {
             var self = this;
 
@@ -77,16 +107,34 @@
             return this._safeInstanceof(instance, class_) ||
                 (class_._schema.hasOwnProperty('@ref') && isRefTo());
         },
+
+        /**
+        * @memberof Barricade.Container
+        * @private
+        */
         _keyClassCreate: function (key, keyClass, json, parameters) {
             return this._schema[key].hasOwnProperty('@factory')
                 ? this._schema[key]['@factory'](json, parameters)
                 : keyClass.create(json, parameters);
         },
+
+        /**
+        * @memberof Barricade.Container
+        * @private
+        */
         _tryResolveOn: function (value) {
             if (!value.resolveWith(this)) {
                 this.emit('_resolveUp', value);
             }
         },
+
+        /**
+        * @memberof Barricade.Container
+        * @instance
+        * @param key
+        * @param {Element} value
+        * @returns {self}
+        */
         set: function (key, value) {
             this.get(key).emit('removeFrom', this);
             this._doSet(key, value);
