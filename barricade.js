@@ -666,13 +666,16 @@ var Barricade = (function () {
         _attachListeners: function (key) {
             var self = this,
                 element = this.get(key),
+                slice = Array.prototype.slice,
                 events = {
-                    'childChange': function (child) {
-                        self.emit('childChange', child);
+                    'childChange': function () {
+                        self.emit.apply(self,
+                          ['childChange'].concat(slice.call(arguments)));
                     },
                     'change': function () {
                         // 'this' is set to callee, no typo
-                        events.childChange(this);
+                        events.childChange.apply(events,
+                          [this].concat(slice.call(arguments)));
                     },
                     'replace': function (newValue) {
                         self.set(key, newValue);
