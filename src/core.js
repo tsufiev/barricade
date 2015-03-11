@@ -44,9 +44,11 @@
         'Container': Container,
         'Deferrable': Deferrable,
         'Enumerated': Enumerated,
+        'Extendable': Extendable,
         'getType': getType, // Very helpful function
         'Identifiable': Identifiable,
         'ImmutableObject': ImmutableObject,
+        'InstanceofMixin': InstanceofMixin,
         'MutableObject': MutableObject,
         'Observable': Observable,
         'Omittable': Omittable,

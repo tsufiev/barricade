@@ -38,7 +38,7 @@
         */
         create: function (f) {
             return function g() {
-                if (!this.hasOwnProperty('_parents')) {
+                if (!Object.prototype.hasOwnProperty.call(this, '_parents')) {
                     Object.defineProperty(this, '_parents', {value: []});
                 }
                 this._parents.push(g);

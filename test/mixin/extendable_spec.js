@@ -19,12 +19,20 @@ describe('Extendable', function () {
     it('should allow schema to be extended', function () {
         var ObjectClass = Barricade.create({
             '@type': Object,
-            'a': {'@type': String}
+            'a': {'@type': String},
+            'c': {'@type': Object}
         }),
-        ExtendedClass = ObjectClass.extend({}, {'b': {'@type': Number}}),
-        instance = ExtendedClass.create({'a': 'foo', 'b': 6});
+        ExtendedClass = ObjectClass.extend({}, {
+            'b': {'@type': Number},
+            'c': {'cc': {'@type': Boolean}}
+        }),
+        instance = ExtendedClass.create({
+            'a': 'foo',
+            'b': 6,
+            'c':{'cc': true}
+        });
 
-        expect(instance.getKeys()).toEqual(['a', 'b']);
+        expect(instance.getKeys().sort()).toEqual(['a', 'b', 'c']);
         expect(instance.get('a').get()).toEqual('foo');
         expect(instance.get('b').get()).toEqual(6);
     });

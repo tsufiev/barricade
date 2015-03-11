@@ -47,7 +47,7 @@ var Barricade = (function () {
         */
         create: function (f) {
             return function g() {
-                if (!this.hasOwnProperty('_parents')) {
+                if (!Object.prototype.hasOwnProperty.call(this, '_parents')) {
                     Object.defineProperty(this, '_parents', {value: []});
                 }
                 this._parents.push(g);
@@ -95,7 +95,7 @@ var Barricade = (function () {
 
         function merge(target, source) {
             forInKeys(source).forEach(function (key) {
-                if (target.hasOwnProperty(key) &&
+                if (Object.prototype.hasOwnProperty.call(target, key) &&
                         isPlainObject(target[key]) &&
                         isPlainObject(source[key])) {
                     merge(target[key], source[key]);
@@ -141,7 +141,8 @@ var Barricade = (function () {
                     subject = this;
 
                 function hasMixin(obj, mixin) {
-                    return obj.hasOwnProperty('_parents') &&
+                    return Object.prototype.hasOwnProperty
+                                           .call(obj, '_parents') &&
                         obj._parents.some(function (_parent) {
                             return _instanceof.call(_parent, mixin);
                         });
@@ -1318,9 +1319,11 @@ var Barricade = (function () {
         'Container': Container,
         'Deferrable': Deferrable,
         'Enumerated': Enumerated,
+        'Extendable': Extendable,
         'getType': getType, // Very helpful function
         'Identifiable': Identifiable,
         'ImmutableObject': ImmutableObject,
+        'InstanceofMixin': InstanceofMixin,
         'MutableObject': MutableObject,
         'Observable': Observable,
         'Omittable': Omittable,
