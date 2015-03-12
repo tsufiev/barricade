@@ -1,3 +1,5 @@
+__See full documentation here:__ http://rackerlabs.github.io/barricade/doc/ (still very much a work in progress)
+
 # Barricade.js
 
 Barricade.js aims to solve the problem of using JSON data across a web app. All of the logic required to ensure JSON’s integrity is rolled into Barricade instead of sprinkled into all of the UI code. This way, UI components can be confident in the data that they are working with, which makes their code more concise and faster to develop.
