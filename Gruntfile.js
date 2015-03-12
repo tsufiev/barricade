@@ -351,8 +351,7 @@ module.exports = function (grunt) {
         'jshint:barricade',
         'jshint:global_state_check',
         'jshint:test',
-        'jasmine',
-        'jsdoc'
+        'jasmine'
     ]);
 
     grunt.registerTask('unit', ['jasmine']);
