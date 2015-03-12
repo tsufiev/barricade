@@ -51,7 +51,7 @@
 
         function merge(target, source) {
             forInKeys(source).forEach(function (key) {
-                if (target.hasOwnProperty(key) &&
+                if (Object.prototype.hasOwnProperty.call(target, key) &&
                         isPlainObject(target[key]) &&
                         isPlainObject(source[key])) {
                     merge(target[key], source[key]);

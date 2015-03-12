@@ -24,7 +24,8 @@
                     subject = this;
 
                 function hasMixin(obj, mixin) {
-                    return obj.hasOwnProperty('_parents') &&
+                    return Object.prototype.hasOwnProperty
+                                           .call(obj, '_parents') &&
                         obj._parents.some(function (_parent) {
                             return _instanceof.call(_parent, mixin);
                         });
