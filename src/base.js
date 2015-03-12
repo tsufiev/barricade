@@ -80,7 +80,7 @@
         _getDefaultValue: function () {
             return this._schema.hasOwnProperty('@default')
                 ? typeof this._schema['@default'] === 'function'
-                    ? this._schema['@default']()
+                    ? this._schema['@default'].call(this)
                     : this._schema['@default']
                 : this._schema['@type']();
         },
