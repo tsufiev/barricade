@@ -180,6 +180,17 @@ var Barricade = (function () {
         };
 
         /**
+        * Checks whether the ID is set for this item.
+        * @method hasID
+        * @memberof Barricade.Identifiable
+        * @instance
+        * @returns {Boolean}
+        */
+        this.hasID = function() {
+            return id !== undefined;
+        };
+
+        /**
         * Sets the ID.
         * @method setID
         * @memberof Barricade.Identifiable
@@ -543,9 +554,7 @@ var Barricade = (function () {
                 Enumerated.call(self, schema['@enum']);
             }
 
-            if (parameters.hasOwnProperty('id')) {
-                Identifiable.call(self, parameters.id);
-            }
+            Identifiable.call(self, parameters.id);
 
             return self;
         },

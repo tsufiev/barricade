@@ -32,6 +32,17 @@
         };
 
         /**
+        * Checks whether the ID is set for this item.
+        * @method hasID
+        * @memberof Barricade.Identifiable
+        * @instance
+        * @returns {Boolean}
+        */
+        this.hasID = function() {
+            return id !== undefined;
+        };
+
+        /**
         * Sets the ID.
         * @method setID
         * @memberof Barricade.Identifiable
