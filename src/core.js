@@ -32,8 +32,8 @@
     }());
 
     function logError() {
-        console.error.apply(console, Array.prototype.slice.call(arguments)
-                                          .unshift('Barricade: '));
+        var args = Array.prototype.slice.call(arguments);
+        console.error.apply(console, ['Barricade: '].concat(args));
     }
 
     BarricadeMain = {
