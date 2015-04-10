@@ -32,6 +32,16 @@ describe('Identifiable', function () {
         this.instance = this.namespace
             .ImmutableClass
             .create({a: 42, b: 'some string'});
+
+        this.namespace.outerContainerClass = Barricade.create({
+            '@type': Array,
+            '*': {
+                '@class': this.namespace.ImmutableClass
+            }
+        });
+
+        this.outerContainer = this.namespace.outerContainerClass.create(
+          [this.instance]);
     });
 
     it('is always instance of Identifiable mixin', function () {
@@ -48,5 +58,33 @@ describe('Identifiable', function () {
 
         expect(this.instance.get('a').hasID()).toBe(true);
         expect(this.instance.get('a').getID()).toBe('someNewID');
+    });
+
+    describe('UID properties', function() {
+        it('an arbitrary object has a unique UID', function() {
+            expect(this.instance.uid).toBeDefined();
+            expect(this.instance.uid()).toBeDefined();
+            expect(this.instance.uid()).not.toEqual(
+              this.instance.get('a').uid());
+        });
+
+        it('objects with same contents have different UIDs', function() {
+            var instanceContents = this.instance.toJSON(),
+              secondInstance = this.namespace.ImmutableClass.create(
+                instanceContents);
+
+            expect(this.instance.uid()).not.toEqual(
+              secondInstance.uid());
+        });
+
+        it("changing container's contents doesn't change its UID", function() {
+            var currentContainerHash = this.outerContainer.uid();
+
+            this.outerContainer.push(this.namespace.ImmutableClass.create({
+                'a': 10, 'b': 'some string'}));
+
+            expect(currentContainerHash).toEqual(
+              this.outerContainer.uid());
+        });
     });
 });
