@@ -42,11 +42,19 @@ describe('Arrays', function () {
     beforeEach(function () {
         this.namespace = {};
 
+        this.namespace.CustomString = Barricade.Primitive.extend({
+            _getPrettyJSON: function() {
+                return 'pretty ' + this._data;
+            }
+        }, {
+            '@type': String
+        });
+
         this.namespace.ArrayClass = Barricade.create({
             '@type': Array,
 
             '*': {
-                '@type': String
+                '@class': this.namespace.CustomString
             }
         });
 
@@ -219,7 +227,7 @@ describe('Arrays', function () {
         expect(this.instance1.length()).toBe(3);
     });
 
-    it('.toJSON() should return JSON blob', function () {
+    it('.toJSON() should return raw JSON blob', function () {
         expect(this.instance1.toJSON()).toEqual(['a', 'b', 'c']);
         expect(this.instance2.toJSON()).toEqual([
             'string element 1',
@@ -230,5 +238,20 @@ describe('Arrays', function () {
             'string element 6',
         ]);
         expect(this.instance3.toJSON()).toEqual([]);
+    });
+
+    it('.toJSON({pretty: true}) should return prettified JSON blob',
+      function () {
+        expect(this.instance1.toJSON({pretty: true})).toEqual(
+          ['pretty a', 'pretty b', 'pretty c']);
+        expect(this.instance2.toJSON({pretty: true})).toEqual([
+            'pretty string element 1',
+            'pretty string element 2',
+            'pretty string element 3',
+            'pretty string element 4',
+            'pretty string element 5',
+            'pretty string element 6',
+        ]);
+        expect(this.instance3.toJSON({pretty: true})).toEqual([]);
     });
 });

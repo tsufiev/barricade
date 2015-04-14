@@ -125,6 +125,14 @@
         },
 
         /**
+        * @memberof Barricade.Base
+        * @private
+        */
+        _getPrettyJSON: function (options) {
+            return this._getJSON(options);
+        },
+
+        /**
         * Returns the primitive type of the Barricade object.
         * @memberof Barricade.Base
         * @instance
@@ -153,5 +161,24 @@
         */
         isRequired: function () {
             return this._schema['@required'] !== false;
+        },
+
+        /**
+        * Returns the JSON representation of the Barricade object.
+        * @memberof Barricade.Base
+        * @instance
+        * @param {Object} [options]
+                 An object containing options that affect the JSON result.
+                 Current supported options are ignoreUnused (Boolean, defaults
+                 to false), which skips keys with values that are unused in
+                 objects, and pretty (Boolean, defaults to false), which gives
+                 control to the method `_getPrettyJSON`.
+        * @returns {JSON}
+        */
+        toJSON: function (options) {
+            options = options || {};
+            return options.pretty
+                ? this._getPrettyJSON(options)
+                : this._getJSON(options);
         }
     }));

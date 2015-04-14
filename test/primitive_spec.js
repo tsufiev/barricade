@@ -163,6 +163,12 @@ describe('Primitives', function () {
             });
         });
 
+        it('.toJSON({pretty: true}) should behave like .toJSON()', function () {
+            types.forEach(function (type) {
+                expect(type.instance.toJSON({pretty: true})).toBe(type.value);
+            });
+        });
+
         it('getPrimitiveType() should return type', function () {
             types.forEach(function (type) {
                 expect(type.instance.getPrimitiveType())

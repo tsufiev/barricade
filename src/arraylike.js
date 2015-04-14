@@ -67,6 +67,16 @@
         }, 
 
         /**
+        * @memberof Barricade.Arraylike
+        * @private
+        */
+        _getJSON: function (options) {
+            return this._data.map(function (el) {
+                return el.toJSON(options);
+            });
+        },
+
+        /**
         * @callback Barricade.Arraylike.eachCB
         * @param {Number} index
         * @param {Element} value
@@ -170,21 +180,5 @@
         */
         toArray: function () {
             return this._data.slice(); // Shallow copy to prevent mutation
-        },
-
-        /**
-        * Converts the Arraylike and all of its elements to JSON.
-        * @memberof Barricade.Arraylike
-        * @instance
-        * @param {Boolean} [ignoreUnused]
-                 Whether to include unused entries. Has no effect at Arraylike's
-                 level, but is passed into each element for them to decide.
-        * @returns {Array} JSON array containing JSON representations of each
-                           element.
-        */
-        toJSON: function (ignoreUnused) {
-            return this._data.map(function (el) {
-                return el.toJSON(ignoreUnused);
-            });
         }
     });

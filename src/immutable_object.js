@@ -71,6 +71,20 @@
         },
 
         /**
+        * @memberof Barricade.ImmutableObject
+        * @private
+        */
+        _getJSON: function (options) {
+            var data = this._data;
+            return this.getKeys().reduce(function (jsonOut, key) {
+                if (options.ignoreUnused !== true || data[key].isUsed()) {
+                    jsonOut[key] = data[key].toJSON(options);
+                }
+                return jsonOut;
+            }, {});
+        },
+
+        /**
         * @callback Barricade.ImmutableObject.eachCB
         * @param {String} key
         * @param {Element} value
@@ -131,24 +145,5 @@
         */
         isEmpty: function () {
             return !Object.keys(this._data).length;
-        },
-
-        /**
-        * @memberof Barricade.ImmutableObject
-        * @instance
-        * @param {Boolean} [ignoreUnused]
-                 Whether to include unused entries. If true, unused values will
-                 not have their key/value pairs show up in the resulting JSON.
-        * @returns {Object} JSON representation of the ImmutableObject and its
-                   values.
-        */
-        toJSON: function (ignoreUnused) {
-            var data = this._data;
-            return this.getKeys().reduce(function (jsonOut, key) {
-                if (ignoreUnused !== true || data[key].isUsed()) {
-                    jsonOut[key] = data[key].toJSON(ignoreUnused);
-                }
-                return jsonOut;
-            }, {});
         }
     });

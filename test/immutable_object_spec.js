@@ -19,11 +19,19 @@ describe('Immutable Objects', function () {
     beforeEach(function () {
         this.namespace = {};
 
+        this.namespace.CustomString = Barricade.Primitive.extend({
+            _getPrettyJSON: function() {
+                return 'pretty ' + this._data;
+            }
+        }, {
+            '@type': String
+        });
+
         this.namespace.FixedKeyClass = Barricade.create({
             '@type': Object,
 
             'stringKey': {
-                '@type': String
+                '@class': this.namespace.CustomString
             },
             'booleanKey': {
                 '@type': Boolean
@@ -127,9 +135,18 @@ describe('Immutable Objects', function () {
         );
     });
 
-    it('.toJSON() should return JSON blob', function () {
+    it('.toJSON() should return raw JSON blob', function () {
         expect(this.instance.toJSON()).toEqual({
             stringKey: "foo",
+            booleanKey: true,
+            numberKey: 43987
+        });
+    });
+
+    it('.toJSON({pretty: true}) should return prettified JSON blob',
+      function () {
+        expect(this.instance.toJSON({pretty: true})).toEqual({
+            stringKey: "pretty foo",
             booleanKey: true,
             numberKey: 43987
         });
