@@ -75,6 +75,12 @@
         * @memberof Barricade.Base
         * @private
         */
+        _uidPrefix: 'obj-',
+
+        /**
+        * @memberof Barricade.Base
+        * @private
+        */
         _getDefaultValue: function () {
             return this._schema.hasOwnProperty('@default')
                 ? typeof this._schema['@default'] === 'function'
