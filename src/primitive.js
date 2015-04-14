@@ -27,6 +27,14 @@
         },
 
         /**
+        * @memberof Barricade.Primitive
+        * @private
+        */
+        _getJSON: function () {
+            return this._data;
+        },
+
+        /**
         * Retrieves the Primitive's value.
         * @memberof Barricade.Primitive
         * @instance
@@ -78,20 +86,5 @@
             logError("Setter - new value (", newVal, ")",
                      " did not match schema: ", schema);
             return this;
-        },
-
-        /**
-        * Converts the Primitive to JSON (which is simply the value itself).
-        * @memberof Barricade.Primitive
-        * @instance
-        * @returns {JSON}
-        */
-        toJSON: function (options) {
-            var json = this._toJSON(options);
-            if ( json !== undefined ) {
-                return json;
-            } else {
-                return this._data;
-            }
         }
     });

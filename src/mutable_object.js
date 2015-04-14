@@ -28,6 +28,21 @@
         * @memberof Barricade.MutableObject
         * @private
         */
+        _getJSON: function (options) {
+            return this.toArray().reduce(function (jsonOut, element) {
+                if (jsonOut.hasOwnProperty(element.getID())) {
+                    logError("ID found multiple times: " + element.getID());
+                } else {
+                    jsonOut[element.getID()] = element.toJSON(options);
+                }
+                return jsonOut;
+            }, {});
+        },
+
+        /**
+        * @memberof Barricade.MutableObject
+        * @private
+        */
         _sift: function (json) {
             return Object.keys(json).map(function (key) {
                 return this._keyClassCreate(this._elSymbol, this._elementClass,
@@ -101,33 +116,6 @@
                 logError('ID should be passed in with parameters object');
             } else {
                 return Arraylike.push.call(this, newJson, newParameters);
-            }
-        },
-
-        /**
-        * Converts the MutableObject and all of its elements to JSON.
-        * @memberof Barricade.MutableObject
-        * @instance
-        * @param {Boolean} [ignoreUnused]
-                 Whether to include unused entries. If true, elements that are
-                 unused will not be included in the return value. This parameter
-                 is also passed to each element's `toJSON()` method.
-        * @returns {Object} JSON object containing JSON representations of each
-                   element.
-        */
-        toJSON: function (options) {
-            var json = this._toJSON(options);
-            if ( json !== undefined ) {
-              return json;
-            } else {
-              return this.toArray().reduce(function (jsonOut, element) {
-                if (jsonOut.hasOwnProperty(element.getID())) {
-                  logError("ID found multiple times: " + element.getID());
-                } else {
-                  jsonOut[element.getID()] = element.toJSON(options);
-                }
-                return jsonOut;
-              }, {});
             }
         }
     });
