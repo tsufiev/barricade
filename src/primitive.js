@@ -86,7 +86,12 @@
         * @instance
         * @returns {JSON}
         */
-        toJSON: function () {
-            return this._data;
+        toJSON: function (options) {
+            var json = this._toJSON(options);
+            if ( json !== undefined ) {
+                return json;
+            } else {
+                return this._data;
+            }
         }
     });

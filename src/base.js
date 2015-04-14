@@ -153,5 +153,16 @@
         */
         isRequired: function () {
             return this._schema['@required'] !== false;
+        },
+
+        _toJSON: function (options) {
+            var pretty = options && options.pretty;
+            if ( pretty && this._getPrettyJSON ) {
+                return this._getPrettyJSON(options);
+            } else if ( !pretty && this._getJSON ) {
+                return this._getJSON(options);
+            } else {
+                return undefined;
+            }
         }
     }));

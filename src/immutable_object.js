@@ -142,13 +142,19 @@
         * @returns {Object} JSON representation of the ImmutableObject and its
                    values.
         */
-        toJSON: function (ignoreUnused) {
-            var data = this._data;
-            return this.getKeys().reduce(function (jsonOut, key) {
-                if (ignoreUnused !== true || data[key].isUsed()) {
-                    jsonOut[key] = data[key].toJSON(ignoreUnused);
-                }
-                return jsonOut;
-            }, {});
+        toJSON: function (options) {
+            var data = this._data,
+              json = this._toJSON(options),
+              ignoreUnused = options && options.ignoreUnused;
+            if ( json !== undefined ) {
+                return json;
+            } else {
+                return this.getKeys().reduce(function (jsonOut, key) {
+                    if (ignoreUnused !== true || data[key].isUsed()) {
+                        jsonOut[key] = data[key].toJSON(options);
+                    }
+                    return jsonOut;
+                }, {});
+            }
         }
     });

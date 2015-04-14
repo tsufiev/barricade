@@ -115,14 +115,19 @@
         * @returns {Object} JSON object containing JSON representations of each
                    element.
         */
-        toJSON: function (ignoreUnused) {
-            return this.toArray().reduce(function (jsonOut, element) {
+        toJSON: function (options) {
+            var json = this._toJSON(options);
+            if ( json !== undefined ) {
+              return json;
+            } else {
+              return this.toArray().reduce(function (jsonOut, element) {
                 if (jsonOut.hasOwnProperty(element.getID())) {
-                    logError("ID found multiple times: " + element.getID());
+                  logError("ID found multiple times: " + element.getID());
                 } else {
-                    jsonOut[element.getID()] = element.toJSON(ignoreUnused);
+                  jsonOut[element.getID()] = element.toJSON(options);
                 }
                 return jsonOut;
-            }, {});
+              }, {});
+            }
         }
     });

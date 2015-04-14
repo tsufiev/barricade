@@ -19,11 +19,19 @@ describe('Mutable Objects', function () {
     beforeEach(function () {
         this.namespace = {};
 
+        this.namespace.CustomString = Barricade.Primitive.extend({
+            _getPrettyJSON: function() {
+                return 'pretty ' + this._data;
+            }
+        }, {
+            '@type': String
+        });
+
         this.namespace.WildClass = Barricade.create({
             '@type': Object,
 
             '?': {
-                '@type': String
+                '@class': this.namespace.CustomString
             }
         });
 
@@ -95,11 +103,20 @@ describe('Mutable Objects', function () {
         expect(this.instance.get(3)).toBe(this.instance.get(2));
     });
 
-    it('.toJSON() should return JSON blob', function () {
+    it('.toJSON() should return raw JSON blob', function () {
         expect(this.instance.toJSON()).toEqual({
             foo: "abcd",
             bar: "efgh",
             baz: "ijkl"
+        });
+    });
+
+    it('.toJSON({pretty: true}) should return prettified JSON blob',
+      function () {
+        expect(this.instance.toJSON({pretty: true})).toEqual({
+            foo: "pretty abcd",
+            bar: "pretty efgh",
+            baz: "pretty ijkl"
         });
     });
 

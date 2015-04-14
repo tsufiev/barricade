@@ -641,6 +641,17 @@ var Barricade = (function () {
         */
         isRequired: function () {
             return this._schema['@required'] !== false;
+        },
+
+        _toJSON: function (options) {
+            var pretty = options && options.pretty;
+            if ( pretty && this._getPrettyJSON ) {
+                return this._getPrettyJSON(options);
+            } else if ( !pretty && this._getJSON ) {
+                return this._getJSON(options);
+            } else {
+                return undefined;
+            }
         }
     }));
 
@@ -945,10 +956,15 @@ var Barricade = (function () {
         * @returns {Array} JSON array containing JSON representations of each
                            element.
         */
-        toJSON: function (ignoreUnused) {
-            return this._data.map(function (el) {
-                return el.toJSON(ignoreUnused);
-            });
+        toJSON: function (options) {
+            var json = this._toJSON(options);
+            if ( json !== undefined ) {
+                return json;
+            } else {
+                return this._data.map(function (el) {
+                    return el.toJSON(options);
+                });
+            }
         }
     });
 
@@ -1091,14 +1107,20 @@ var Barricade = (function () {
         * @returns {Object} JSON representation of the ImmutableObject and its
                    values.
         */
-        toJSON: function (ignoreUnused) {
-            var data = this._data;
-            return this.getKeys().reduce(function (jsonOut, key) {
-                if (ignoreUnused !== true || data[key].isUsed()) {
-                    jsonOut[key] = data[key].toJSON(ignoreUnused);
-                }
-                return jsonOut;
-            }, {});
+        toJSON: function (options) {
+            var data = this._data,
+              json = this._toJSON(options),
+              ignoreUnused = options && options.ignoreUnused;
+            if ( json !== undefined ) {
+                return json;
+            } else {
+                return this.getKeys().reduce(function (jsonOut, key) {
+                    if (ignoreUnused !== true || data[key].isUsed()) {
+                        jsonOut[key] = data[key].toJSON(options);
+                    }
+                    return jsonOut;
+                }, {});
+            }
         }
     });
 
@@ -1205,15 +1227,20 @@ var Barricade = (function () {
         * @returns {Object} JSON object containing JSON representations of each
                    element.
         */
-        toJSON: function (ignoreUnused) {
-            return this.toArray().reduce(function (jsonOut, element) {
+        toJSON: function (options) {
+            var json = this._toJSON(options);
+            if ( json !== undefined ) {
+              return json;
+            } else {
+              return this.toArray().reduce(function (jsonOut, element) {
                 if (jsonOut.hasOwnProperty(element.getID())) {
-                    logError("ID found multiple times: " + element.getID());
+                  logError("ID found multiple times: " + element.getID());
                 } else {
-                    jsonOut[element.getID()] = element.toJSON(ignoreUnused);
+                  jsonOut[element.getID()] = element.toJSON(options);
                 }
                 return jsonOut;
-            }, {});
+              }, {});
+            }
         }
     });
 
@@ -1291,8 +1318,13 @@ var Barricade = (function () {
         * @instance
         * @returns {JSON}
         */
-        toJSON: function () {
-            return this._data;
+        toJSON: function (options) {
+            var json = this._toJSON(options);
+            if ( json !== undefined ) {
+                return json;
+            } else {
+                return this._data;
+            }
         }
     });
 

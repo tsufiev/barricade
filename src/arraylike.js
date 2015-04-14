@@ -182,9 +182,14 @@
         * @returns {Array} JSON array containing JSON representations of each
                            element.
         */
-        toJSON: function (ignoreUnused) {
-            return this._data.map(function (el) {
-                return el.toJSON(ignoreUnused);
-            });
+        toJSON: function (options) {
+            var json = this._toJSON(options);
+            if ( json !== undefined ) {
+                return json;
+            } else {
+                return this._data.map(function (el) {
+                    return el.toJSON(options);
+                });
+            }
         }
     });
