@@ -43,7 +43,7 @@
         create: function (json, parameters) {
             var self = this.extend({}),
                 schema = self._schema,
-                isUsed;
+                isUsed, id;
 
             self._parameters = parameters = parameters || {};
 
@@ -66,7 +66,10 @@
                 Enumerated.call(self, schema['@enum']);
             }
 
-            Identifiable.call(self, parameters.id);
+            if ( Object.hasOwnProperty.call(parameters, 'id') ) {
+                id = parameters.id;
+            }
+            Identifiable.call(self, id);
 
             return self;
         },

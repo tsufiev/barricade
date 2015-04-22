@@ -59,10 +59,10 @@
         * @memberof Barricade.Arraylike
         * @private
         */
-        _sift: function (json) {
+        _sift: function (json, parameters) {
             return json.map(function (el) {
                 return this._keyClassCreate(
-                    this._elSymbol, this._elementClass, el);
+                    this._elSymbol, this._elementClass, el, parameters);
             }, this);
         }, 
 
