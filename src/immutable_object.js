@@ -38,11 +38,11 @@
         * @memberof Barricade.ImmutableObject
         * @private
         */
-        _sift: function (json) {
+        _sift: function (json, parameters) {
             var self = this;
             return this.getKeys().reduce(function (objOut, key) {
-                objOut[key] =
-                    self._keyClassCreate(key, self._keyClasses[key], json[key]);
+                objOut[key] = self._keyClassCreate(
+                  key, self._keyClasses[key], json[key], parameters);
                 return objOut;
             }, {});
         },

@@ -43,10 +43,12 @@
         * @memberof Barricade.MutableObject
         * @private
         */
-        _sift: function (json) {
+        _sift: function (json, parameters) {
             return Object.keys(json).map(function (key) {
-                return this._keyClassCreate(this._elSymbol, this._elementClass,
-                                            json[key], {id: key});
+                var params = Object.create(parameters);
+                params.id = key;
+                return this._keyClassCreate(
+                  this._elSymbol, this._elementClass, json[key], params);
             }, this);
         },
 
