@@ -47,11 +47,12 @@ var Barricade = (function () {
         */
         create: function (f) {
             return function g() {
-                if (!Object.prototype.hasOwnProperty.call(this, '_parents')) {
-                    Object.defineProperty(this, '_parents', {value: []});
+                var result = f.apply(this, arguments) || this;
+                if (!Object.prototype.hasOwnProperty.call(result, '_parents')) {
+                    Object.defineProperty(result, '_parents', {value: []});
                 }
-                this._parents.push(g);
-                return f.apply(this, arguments);
+                result._parents.push(g);
+                return result;
             };
         }
     };
