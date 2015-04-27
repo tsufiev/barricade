@@ -23,6 +23,45 @@ describe('Blueprint', function () {
         expect(instance._parents).toEqual([bp]);
     });
 
+    it('should return original object if f returns nothing', function () {
+        var bp = Barricade.Blueprint.create(function () {}),
+            instance = {};
+
+        expect(bp.call(instance)).toBe(instance);
+    });
+
+    it('should return original object if f returns this', function () {
+        var bp = Barricade.Blueprint.create(function () { return this; }),
+            instance = {};
+
+        expect(bp.call(instance)).toBe(instance);
+    });
+
+    it('should return new object if f returns new object', function () {
+        var supposedResult,
+            bp = Barricade.Blueprint.create(function () {
+                supposedResult = Object.create(this);
+                return supposedResult;
+            }),
+            instance = {},
+            result = bp.call(instance);
+
+        expect(result).not.toBe(instance);
+        expect(result).toBe(supposedResult);
+        expect(result._parents).toEqual([bp]);
+    });
+
+    it('should not modify original if f returns new object', function () {
+        var bp = Barricade.Blueprint.create(function () {
+                return Object.create(this);
+            }),
+            instance = {};
+
+        bp.call(instance);
+
+        expect(instance._parents).toBe(undefined);
+    });
+
     it('should not have a problem with Object.create(null)', function () {
         var bp = Barricade.Blueprint.create(function () { return this; }),
             instance = bp.call(Object.create(null));
