@@ -117,7 +117,7 @@
         * @private
         */
         _safeInstanceof: function (instance, class_) {
-            return typeof instance === 'object' &&
+            return getType(instance) === Object &&
                 ('instanceof' in instance) &&
                 instance.instanceof(class_);
         },

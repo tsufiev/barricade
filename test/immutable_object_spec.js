@@ -64,6 +64,16 @@ describe('Immutable Objects', function () {
         expect(noKeys.isEmpty()).toBe(true);
     });
 
+    it('should not crash when setting value with null', function () {
+        var objectKeyClass = Barricade.create({
+                '@type': Object,
+                'x': {'@class': this.namespace.FixedKeyClass}
+            }),
+            instance = objectKeyClass.create();
+
+        instance.set('x', null);
+    });
+
     it('.getKeys() should return array of keys', function () {
         var keys = this.instance.getKeys();
 
