@@ -18,18 +18,18 @@
     */
     Deferrable = Blueprint.create(function (schema) {
         var self = this,
-            deferred;
+            deferred = schema.hasOwnProperty('@ref')
+                ? Deferred.create(schema['@ref'].needs, getter, resolver)
+                : null;
 
-        function resolver(neededValue) {
-            var ref = schema['@ref'].resolver(self, neededValue);
-            if (ref === undefined) {
-                logError('Could not resolve ', JSON.stringify(self.toJSON()));
-            }
-            return ref;
+        function getter(neededValue) {
+            return schema['@ref'].getter(self, neededValue);
         }
 
-        if (schema.hasOwnProperty('@ref')) {
-            deferred = Deferred.create(schema['@ref'].needs, resolver);
+        function resolver(retrievedValue) {
+            self.emit('replace', schema['@ref'].processor
+                                    ? schema['@ref'].processor(retrievedValue)
+                                    : retrievedValue);
         }
 
         this.resolveWith = function (obj) {
@@ -37,7 +37,7 @@
 
             if (deferred && !deferred.isResolved()) {
                 if (deferred.needs(obj)) {
-                    this.emit('replace', deferred.resolve(obj));
+                    deferred.resolve(obj);
                 } else {
                     allResolved = false;
                 }
@@ -52,5 +52,9 @@
             }
 
             return allResolved;
+        };
+
+        this.isPlaceholder = function () {
+            return !!deferred;
         };
     });

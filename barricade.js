@@ -263,18 +263,18 @@ var Barricade = (function () {
     */
     Deferrable = Blueprint.create(function (schema) {
         var self = this,
-            deferred;
+            deferred = schema.hasOwnProperty('@ref')
+                ? Deferred.create(schema['@ref'].needs, getter, resolver)
+                : null;
 
-        function resolver(neededValue) {
-            var ref = schema['@ref'].resolver(self, neededValue);
-            if (ref === undefined) {
-                logError('Could not resolve ', JSON.stringify(self.toJSON()));
-            }
-            return ref;
+        function getter(neededValue) {
+            return schema['@ref'].getter(self, neededValue);
         }
 
-        if (schema.hasOwnProperty('@ref')) {
-            deferred = Deferred.create(schema['@ref'].needs, resolver);
+        function resolver(retrievedValue) {
+            self.emit('replace', schema['@ref'].processor
+                                    ? schema['@ref'].processor(retrievedValue)
+                                    : retrievedValue);
         }
 
         this.resolveWith = function (obj) {
@@ -282,7 +282,7 @@ var Barricade = (function () {
 
             if (deferred && !deferred.isResolved()) {
                 if (deferred.needs(obj)) {
-                    this.emit('replace', deferred.resolve(obj));
+                    deferred.resolve(obj);
                 } else {
                     allResolved = false;
                 }
@@ -297,6 +297,10 @@ var Barricade = (function () {
             }
 
             return allResolved;
+        };
+
+        this.isPlaceholder = function () {
+            return !!deferred;
         };
     });
 
@@ -469,10 +473,11 @@ var Barricade = (function () {
                  Callback to execute when resolve happens.
         * @returns {Barricade.Deferred}
         */
-        create: function (classGetter, onResolve) {
+        create: function (classGetter, getter, onResolve) {
             var self = Object.create(this);
             self._isResolved = false;
             self._classGetter = classGetter;
+            self._getter = getter;
             self._onResolve = onResolve;
             return self;
         },
@@ -502,17 +507,25 @@ var Barricade = (function () {
         * @param obj
         */
         resolve: function (obj) {
-            var ref;
+            var self = this,
+                neededValue;
+
+            function doResolve(realNeededValue) {
+                neededValue.off('replace', doResolve);
+                self._onResolve(realNeededValue);
+                self._isResolved = true;
+            }
 
             if (this._isResolved) {
                 throw new Error('Deferred already resolved');
             }
 
-            ref = this._onResolve(obj);
+            neededValue = this._getter(obj);
 
-            if (ref !== undefined) {
-                this._isResolved = true;
-                return ref;
+            if (neededValue.isPlaceholder()) {
+                neededValue.on('replace', doResolve);
+            } else {
+                doResolve(neededValue);
             }
         }
     };
