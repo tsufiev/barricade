@@ -53,6 +53,34 @@ describe('Observable', function () {
         expect(calls.change).toBe(1);
     });
 
+    it('.off during .emit should not cause skipped callbacks', function () {
+        var StringClass = Barricade.create({'@type': String}),
+            calls = [false, false, false, false],
+            instance = StringClass.create('');
+
+        instance.on('foo', function () {
+            calls[0] = true;
+        });
+
+        function cb2() {
+            calls[1] = true;
+            instance.off('foo', cb2);
+        }
+
+        instance.on('foo', cb2);
+
+        instance.on('foo', function () {
+            calls[2] = true;
+        });
+
+        instance.on('foo', function () {
+            calls[3] = true;
+        });
+
+        instance.emit('foo');
+        expect(calls).toEqual([true, true, true, true]);
+    });
+
     describe('Array events', function () {
         beforeEach(function () {
             this.namespace = {};
