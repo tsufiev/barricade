@@ -35,7 +35,7 @@
         this.emit = function (eventName) {
             var args = arguments; // Must come from correct scope
             if (events.hasOwnProperty(eventName)) {
-                events[eventName].forEach(function (callback) {
+                events[eventName].slice().forEach(function (callback) {
                     // Call with emitter as context and pass all but eventName
                     callback.apply(this, Array.prototype.slice.call(args, 1));
                 }, this);
