@@ -263,18 +263,25 @@ var Barricade = (function () {
     */
     Deferrable = Blueprint.create(function (schema) {
         var self = this,
+            needed,
             deferred = schema.hasOwnProperty('@ref')
                 ? Deferred.create(schema['@ref'].needs, getter, resolver)
                 : null;
 
-        function getter(neededValue) {
-            return schema['@ref'].getter(self, neededValue);
+        if (schema.hasOwnProperty('@ref') && !schema['@ref'].processor) {
+            schema['@ref'].processor = function (o) { return o.val; };
+        }
+
+        function getter(neededVal) {
+            return schema['@ref'].getter({standIn: self, needed: neededVal});
         }
 
         function resolver(retrievedValue) {
-            self.emit('replace', schema['@ref'].processor
-                                    ? schema['@ref'].processor(retrievedValue)
-                                    : retrievedValue);
+            self.emit('replace', schema['@ref'].processor({
+                val: retrievedValue,
+                standIn: self,
+                needed: needed
+            }));
         }
 
         this.resolveWith = function (obj) {
@@ -282,6 +289,7 @@ var Barricade = (function () {
 
             if (deferred && !deferred.isResolved()) {
                 if (deferred.needs(obj)) {
+                    needed = obj;
                     deferred.resolve(obj);
                 } else {
                     allResolved = false;

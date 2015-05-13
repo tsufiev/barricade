@@ -31,15 +31,16 @@ describe('@ref', function () {
                 needs: function () {
                     return self.namespace.Parent;
                 },
-                getter: function (json, parentObj) {
+                getter: function (data) {
                     self.numCalls++;
-                    return parentObj.get('b');
+                    expect(data.standIn.get()).toBe('abc');
+                    return data.needed.get('b');
                 },
-                processor: function (b) {
+                processor: function (data) {
                     self.numProcessorCalls++;
-                    expect(b.instanceof(self.namespace.IsReferredTo))
+                    expect(data.val.instanceof(self.namespace.IsReferredTo))
                         .toBe(true);
-                    return b;
+                    return data.val;
                 }
             }
         });
@@ -51,9 +52,9 @@ describe('@ref', function () {
                 needs: function () {
                     return self.namespace.FluidParent;
                 },
-                getter: function (json, parentObj) {
+                getter: function (data) {
                     self.numCalls++;
-                    return parentObj.get('b');
+                    return data.needed.get('b');
                 }
             }
         });
@@ -65,9 +66,9 @@ describe('@ref', function () {
                 needs: function () {
                     return self.namespace.FluidParent1;
                 },
-                getter: function (json, parentObj) {
+                getter: function (data) {
                     self.numCalls++;
-                    return parentObj.get('b');
+                    return data.needed.get('b');
                 }
             }
         });
@@ -131,8 +132,8 @@ describe('@ref', function () {
                             needs: function () {
                                 return self.namespace.Grandparent;
                             },
-                            getter: function (json, grandparent) {
-                                return grandparent.get('referredTo');
+                            getter: function (data) {
+                                return data.needed.get('referredTo');
                             }
                         }
                     }
@@ -151,8 +152,8 @@ describe('@ref', function () {
                     needs: function () {
                         return self.namespace.Grandparent;
                     },
-                    getter: function (json) {
-                        return self.namespace.Parent2.create(json);
+                    getter: function (data) {
+                        return self.namespace.Parent2.create(data.standIn);
                     }
                 }
             }
@@ -191,9 +192,9 @@ describe('@ref', function () {
                 '@ref': {
                     to: AClass,
                     needs: function () { return ContainerClass; },
-                    getter: function (json, container) {
+                    getter: function (data) {
                         numCalls++;
-                        return container.get('a');
+                        return data.needed.get('a');
                     }
                 }
             }),
@@ -202,7 +203,7 @@ describe('@ref', function () {
                 '@ref': {
                     to: AClass,
                     needs: function () { return ContainerClass; },
-                    getter: function (json, container) {
+                    getter: function (data) {
                         numCalls++;
                         // FIXME(dragorosson): this test relies on the order of
                         // resolving matching the order the keys (a, b, c) are
@@ -213,8 +214,8 @@ describe('@ref', function () {
                         // the placeholder is being retrieved, then resolved,
                         // firing off the resolve of the deferred depending on
                         // this placeholder.
-                        expect(container.get('b').isPlaceholder()).toBe(true);
-                        return container.get('b');
+                        expect(data.needed.get('b').isPlaceholder()).toBe(true);
+                        return data.needed.get('b');
                     }
                 }
             }),
