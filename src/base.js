@@ -32,7 +32,7 @@
     * @mixes   Barricade.Identifiable
     * @extends Barricade.Identifiable
     */
-    Base = Extendable.call(InstanceofMixin.call({
+    Base = Deferrable.call(Extendable.call(InstanceofMixin.call({
         /**
         * Creates a `Base` instance
         * @memberof Barricade.Base
@@ -59,7 +59,6 @@
 
             Observable.call(self);
             Omittable.call(self, isUsed);
-            Deferrable.call(self, schema);
             Validatable.call(self, schema);
 
             if (schema.hasOwnProperty('@enum')) {
@@ -187,4 +186,4 @@
                 ? this._getPrettyJSON(options)
                 : this._getJSON(options);
         }
-    }));
+    })));

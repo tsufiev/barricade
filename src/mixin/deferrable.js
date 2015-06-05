@@ -16,12 +16,16 @@
     * @mixin
     * @memberof Barricade
     */
-    Deferrable = Blueprint.create(function (schema) {
-        var self = this,
-            needed,
-            deferred = schema.hasOwnProperty('@ref')
-                ? Deferred.create(schema['@ref'].needs, getter, resolver)
-                : null;
+    Deferrable = Blueprint.create(function () {
+        var existingCreate = this.create;
+
+        this.create = function() {
+        var self = existingCreate.apply(this, arguments),
+          schema = self._schema,
+          needed,
+          deferred = schema.hasOwnProperty('@ref')
+            ? Deferred.create(schema['@ref'].needs, getter, resolver)
+            : null;
 
         if (schema.hasOwnProperty('@ref') && !schema['@ref'].processor) {
             schema['@ref'].processor = function (o) { return o.val; };
@@ -39,7 +43,7 @@
             }));
         }
 
-        this.resolveWith = function (obj) {
+        self.resolveWith = function (obj) {
             var allResolved = true;
 
             if (deferred && !deferred.isResolved()) {
@@ -62,7 +66,25 @@
             return allResolved;
         };
 
-        this.isPlaceholder = function () {
+        self.isPlaceholder = function () {
             return !!deferred;
         };
+
+        return self;
+        };
+
+        this.isValidRef = function(instance) {
+            var clsRef = this._schema['@ref'];
+            if (!clsRef) {
+                return false;
+            }
+            if (typeof clsRef.to === 'function') {
+                return this._safeInstanceof(instance, clsRef.to());
+            } else if (typeof clsRef.to === 'object') {
+                return this._safeInstanceof(instance, clsRef.to);
+            }
+            throw new Error('Ref.to was ' + clsRef.to);
+        };
+
+        return this;
     });

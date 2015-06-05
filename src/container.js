@@ -91,21 +91,8 @@
         * @private
         */
         _isCorrectType: function (instance, class_) {
-            var self = this;
-
-            function isRefTo() {
-                if (typeof class_._schema['@ref'].to === 'function') {
-                    return self._safeInstanceof(instance,
-                                                class_._schema['@ref'].to());
-                } else if (typeof class_._schema['@ref'].to === 'object') {
-                    return self._safeInstanceof(instance,
-                                                class_._schema['@ref'].to);
-                }
-                throw new Error('Ref.to was ' + class_._schema['@ref'].to);
-            }
-
             return this._safeInstanceof(instance, class_) ||
-                (class_._schema.hasOwnProperty('@ref') && isRefTo());
+                class_.isValidRef(instance);
         },
 
         /**
