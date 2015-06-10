@@ -29,9 +29,15 @@
             var self = Base.create.call(this, json, parameters);
 
             return self.on('_addedElement', function (key) {
+                // every time a new element is added we need to set the
+                // listeners for it and try to resolve any references,
+                // passing the resolution upward if needed
                 self._attachListeners(key);
                 self._tryResolveOn(self.get(key));
             }).each(function (index, value) {
+                // also we bind the handlers and do reference resolution
+                // for all the children that are already here (no upward
+                // resolution here)
                 self._attachListeners(index);
                 value.resolveWith(self);
             });
