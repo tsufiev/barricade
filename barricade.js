@@ -268,26 +268,34 @@ var Barricade = (function () {
             var self = existingCreate.apply(this, arguments),
                 schema = self._schema,
                 needed,
-                deferred = schema.hasOwnProperty('@ref')
-                    ? Deferred.create(schema['@ref'].needs, getter, resolver)
-                    : null;
+                deferred;
 
-            if (schema.hasOwnProperty('@ref') && !schema['@ref'].processor) {
-                schema['@ref'].processor = function (o) { return o.val; };
-            }
+            self.setDeferred = function (refObj, postProcessor, callee) {
+                deferred = refObj ?
+                    Deferred.create(refObj.needs, getter, resolver) : null;
 
-            function getter(neededVal) {
-                return schema['@ref'].getter(
-                    {standIn: self, needed: neededVal});
-            }
+                callee = callee || self;
 
-            function resolver(retrievedValue) {
-                self.emit('replace', schema['@ref'].processor({
-                    val: retrievedValue,
-                    standIn: self,
-                    needed: needed
-                }));
-            }
+                if (refObj && !refObj.processor) {
+                    refObj.processor = function (o) { return o.val; };
+                }
+
+                function getter(neededVal) {
+                    return refObj.getter({standIn: callee, needed: neededVal});
+                }
+
+                function resolver(retrievedValue) {
+                    postProcessor(refObj.processor({
+                        val: retrievedValue,
+                        standIn: callee,
+                        needed: needed
+                    }));
+                }
+            };
+
+            self.setDeferred(schema['@ref'], function(processed) {
+                self.emit('replace', processed);
+            });
 
             self.resolveWith = function (obj) {
                 var allResolved = true;
