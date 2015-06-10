@@ -265,57 +265,58 @@ var Barricade = (function () {
         var existingCreate = this.create;
 
         this.create = function() {
-        var self = existingCreate.apply(this, arguments),
-          schema = self._schema,
-          needed,
-          deferred = schema.hasOwnProperty('@ref')
-            ? Deferred.create(schema['@ref'].needs, getter, resolver)
-            : null;
+            var self = existingCreate.apply(this, arguments),
+                schema = self._schema,
+                needed,
+                deferred = schema.hasOwnProperty('@ref')
+                    ? Deferred.create(schema['@ref'].needs, getter, resolver)
+                    : null;
 
-        if (schema.hasOwnProperty('@ref') && !schema['@ref'].processor) {
-            schema['@ref'].processor = function (o) { return o.val; };
-        }
-
-        function getter(neededVal) {
-            return schema['@ref'].getter({standIn: self, needed: neededVal});
-        }
-
-        function resolver(retrievedValue) {
-            self.emit('replace', schema['@ref'].processor({
-                val: retrievedValue,
-                standIn: self,
-                needed: needed
-            }));
-        }
-
-        self.resolveWith = function (obj) {
-            var allResolved = true;
-
-            if (deferred && !deferred.isResolved()) {
-                if (deferred.needs(obj)) {
-                    needed = obj;
-                    deferred.resolve(obj);
-                } else {
-                    allResolved = false;
-                }
+            if (schema.hasOwnProperty('@ref') && !schema['@ref'].processor) {
+                schema['@ref'].processor = function (o) { return o.val; };
             }
 
-            if (this.instanceof(Container)) {
-                this.each(function (index, value) {
-                    if (!value.resolveWith(obj)) {
+            function getter(neededVal) {
+                return schema['@ref'].getter(
+                    {standIn: self, needed: neededVal});
+            }
+
+            function resolver(retrievedValue) {
+                self.emit('replace', schema['@ref'].processor({
+                    val: retrievedValue,
+                    standIn: self,
+                    needed: needed
+                }));
+            }
+
+            self.resolveWith = function (obj) {
+                var allResolved = true;
+
+                if (deferred && !deferred.isResolved()) {
+                    if (deferred.needs(obj)) {
+                        needed = obj;
+                        deferred.resolve(obj);
+                    } else {
                         allResolved = false;
                     }
-                });
-            }
+                }
 
-            return allResolved;
-        };
+                if (this.instanceof(Container)) {
+                    this.each(function (index, value) {
+                        if (!value.resolveWith(obj)) {
+                            allResolved = false;
+                        }
+                    });
+                }
 
-        self.isPlaceholder = function () {
-            return !!deferred;
-        };
+                return allResolved;
+            };
 
-        return self;
+            self.isPlaceholder = function () {
+                return !!deferred;
+            };
+
+            return self;
         };
 
         this.isValidRef = function(instance) {
