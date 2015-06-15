@@ -285,7 +285,7 @@ var Barricade = (function () {
                 }
 
                 function resolver(retrievedValue) {
-                    postProcessor(refObj.processor({
+                    postProcessor.call(callee, refObj.processor({
                         val: retrievedValue,
                         standIn: callee,
                         needed: needed
@@ -297,8 +297,9 @@ var Barricade = (function () {
                 self.emit('replace', processed);
             });
 
-            self.resolveWith = function (obj) {
+            self.resolveWith = function (obj, stack) {
                 var allResolved = true;
+                stack = stack || [];
 
                 if (deferred && !deferred.isResolved()) {
                     if (deferred.needs(obj)) {
@@ -311,7 +312,10 @@ var Barricade = (function () {
 
                 if (this.instanceof(Container)) {
                     this.each(function (index, value) {
-                        if (!value.resolveWith(obj)) {
+                        if (stack.indexOf(value) > -1) {
+                            return;
+                        }
+                        if (!value.resolveWith(obj, stack.concat(value))) {
                             allResolved = false;
                         }
                     });
