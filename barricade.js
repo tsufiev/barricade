@@ -611,17 +611,6 @@ var Barricade = (function () {
         * @memberof Barricade.Container
         * @private
         */
-        this._keyClassCreate = function (key, keyClass, json, parameters) {
-            var keyClassSchema = this.schema().keyClass(key).schema();
-            return keyClassSchema.has('factory')
-                ? keyClassSchema.get('factory')(json, parameters)
-                : keyClass.create(json, parameters);
-        };
-
-        /**
-        * @memberof Barricade.Container
-        * @private
-        */
         this._tryResolveOn = function (value) {
             if (!value.resolveWith(this)) {
                 this.emit('_resolveUp', value);
@@ -661,8 +650,8 @@ var Barricade = (function () {
 
             this._data[index] = this._isCorrectType(newVal, elClass)
                 ? this._data[index] = newVal
-                : this._keyClassCreate(this._elSymbol, elClass,
-                                       newVal, newParameters);
+                : this.schema().keyClassCreate(this._elSymbol, newVal,
+                                               newParameters);
 
             this.emit('change', 'set', index, this._data[index], oldVal);
         };
@@ -678,10 +667,8 @@ var Barricade = (function () {
         * @private
         */
         this._sift = function (json) {
-            var elClass = this.schema().keyClass(this._elSymbol);
             return json.map(function (el) {
-                return this._keyClassCreate(
-                    this._elSymbol, elClass, el);
+                return this.schema().keyClassCreate(this._elSymbol, el);
             }, this);
         };
 
@@ -772,8 +759,8 @@ var Barricade = (function () {
             this._data.push(
                 this._isCorrectType(newValue, elClass)
                     ? newValue
-                    : this._keyClassCreate(this._elSymbol, elClass,
-                                           newValue, newParameters));
+                    : this.schema().keyClassCreate(this._elSymbol, newValue,
+                                                   newParameters));
 
             return this.emit('_addedElement', this._data.length - 1)
                        .emit('change', 'add', this._data.length - 1);
@@ -829,9 +816,7 @@ var Barricade = (function () {
         this._sift = function (json) {
             var self = this;
             return this.getKeys().reduce(function (objOut, key) {
-                objOut[key] = self._keyClassCreate(key,
-                                                   self.schema().keyClass(key),
-                                                   json[key]);
+                objOut[key] = self.schema().keyClassCreate(key, json[key]);
                 return objOut;
             }, {});
         };
@@ -848,9 +833,8 @@ var Barricade = (function () {
                                         this.schema().keyClass(key))) {
                     this._data[key] = newValue;
                 } else {
-                    this._data[key] =
-                        this._keyClassCreate(key, this.schema().keyClass(key),
-                                             newValue, newParameters);
+                    this._data[key] = this.schema().keyClassCreate(
+                                          key, newValue, newParameters);
                 }
 
                 this.emit('change', 'set', key, this._data[key], oldVal);
@@ -971,10 +955,9 @@ var Barricade = (function () {
         * @private
         */
         this._sift = function (json) {
-            var elClass = this.schema().keyClass(this._elSymbol);
             return Object.keys(json).map(function (key) {
-                return this._keyClassCreate(this._elSymbol, elClass,
-                                            json[key], {id: key});
+                return this.schema().keyClassCreate(this._elSymbol, json[key],
+                                                    {id: key});
             }, this);
         };
 
@@ -1089,16 +1072,21 @@ var Barricade = (function () {
             '@required': function (required) {
                 this._required = required;
             },
-            '@factory': function (factory) {
-                this._factory = factory;
+            '@factory': function () {
+                // do nothing for now
             },
             normalKey: function (key, extension, outerClass) {
                 if (!Object.hasOwnProperty.call(this, '_keyClasses')) {
                     this._keyClasses = Object.create(this._keyClasses);
+                    this._factories = Object.create(this._factories);
                 }
 
                 if (!(key in this._keyClasses)) {
                     this._keyClassList = this._keyClassList.concat(key);
+                }
+
+                if ('@factory' in extension) {
+                    this._factories[key] = extension['@factory'];
                 }
 
                 if ('@class' in extension) {
@@ -1129,6 +1117,12 @@ var Barricade = (function () {
         * @memberof Barricade.Schema
         * @private
         */
+        _factories: {},
+
+        /**
+        * @memberof Barricade.Schema
+        * @private
+        */
         _keyClassList: [],
 
         /**
@@ -1154,12 +1148,6 @@ var Barricade = (function () {
         * @private
         */
         _enum: null,
-
-        /**
-        * @memberof Barricade.Schema
-        * @private
-        */
-        _factory: null,
 
         /**
         * @memberof Barricade.Schema
@@ -1276,6 +1264,23 @@ var Barricade = (function () {
         */
         keyClass: function (key) {
             return this._keyClasses[key];
+        },
+
+        /**
+        * Instantiates a key class. If there is a factory method defined for the
+          key (using @factory), it will be used instead of the key class.
+        * @memberof Barricade.Schema
+        * @param {String} key
+                 Sub-schema class to instantiate
+        * @param {JSON} json
+        * @param {Object} parameters
+          @returns {Barricade.Base}
+                   Instance of sub-schema class
+        */
+        keyClassCreate: function (key, json, parameters) {
+            return key in this._factories
+                ? this._factories[key](json, parameters)
+                : this.keyClass(key).create(json, parameters);
         },
 
         /**
