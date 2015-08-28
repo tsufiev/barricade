@@ -20,6 +20,7 @@ describe('@ref', function () {
         var self = this;
         this.namespace = {};
         this.numCalls = 0;
+        this.numProcessorCalls = 0;
 
         this.namespace.IsReferredTo = Barricade.create({'@type': Number});
 
@@ -30,9 +31,16 @@ describe('@ref', function () {
                 needs: function () {
                     return self.namespace.Parent;
                 },
-                resolver: function (json, parentObj) {
+                getter: function (data) {
                     self.numCalls++;
-                    return parentObj.get('b');
+                    expect(data.standIn.get()).toBe('abc');
+                    return data.needed.get('b');
+                },
+                processor: function (data) {
+                    self.numProcessorCalls++;
+                    expect(data.val.instanceof(self.namespace.IsReferredTo))
+                        .toBe(true);
+                    return data.val;
                 }
             }
         });
@@ -44,9 +52,9 @@ describe('@ref', function () {
                 needs: function () {
                     return self.namespace.FluidParent;
                 },
-                resolver: function (json, parentObj) {
+                getter: function (data) {
                     self.numCalls++;
-                    return parentObj.get('b');
+                    return data.needed.get('b');
                 }
             }
         });
@@ -58,9 +66,9 @@ describe('@ref', function () {
                 needs: function () {
                     return self.namespace.FluidParent1;
                 },
-                resolver: function (json, parentObj) {
+                getter: function (data) {
                     self.numCalls++;
-                    return parentObj.get('b');
+                    return data.needed.get('b');
                 }
             }
         });
@@ -124,8 +132,8 @@ describe('@ref', function () {
                             needs: function () {
                                 return self.namespace.Grandparent;
                             },
-                            resolver: function (json, grandparent) {
-                                return grandparent.get('referredTo');
+                            getter: function (data) {
+                                return data.needed.get('referredTo');
                             }
                         }
                     }
@@ -144,8 +152,8 @@ describe('@ref', function () {
                     needs: function () {
                         return self.namespace.Grandparent;
                     },
-                    resolver: function (json) {
-                        return self.namespace.Parent2.create(json);
+                    getter: function (data) {
+                        return self.namespace.Parent2.create(data.standIn);
                     }
                 }
             }
@@ -156,6 +164,7 @@ describe('@ref', function () {
         var instance = this.namespace.Parent.create({'a': "abc", 'b': 5});
 
         expect(this.numCalls).toBe(1);
+        expect(this.numProcessorCalls).toBe(1);
         expect(instance.get('a')).toBe(instance.get('b'));
     });
 
@@ -173,6 +182,54 @@ describe('@ref', function () {
 
         expect(instance.get('refChild').get('a').get('b').get('c').get())
             .toBe(instance.get('referredTo').get());
+    });
+
+    it('should resolve references when placeholders are resolved', function () {
+        var numCalls = 0,
+            AClass = Barricade.create({'@type': String}),
+            BClass = Barricade.create({
+                '@type': String,
+                '@ref': {
+                    to: AClass,
+                    needs: function () { return ContainerClass; },
+                    getter: function (data) {
+                        numCalls++;
+                        return data.needed.get('a');
+                    }
+                }
+            }),
+            CClass = Barricade.create({
+                '@type': String,
+                '@ref': {
+                    to: AClass,
+                    needs: function () { return ContainerClass; },
+                    getter: function (data) {
+                        numCalls++;
+                        // FIXME(dragorosson): this test relies on the order of
+                        // resolving matching the order the keys (a, b, c) are
+                        // defined. This test will fail if this is ever not the
+                        // case, but it would be harder to write the test
+                        // including this check otherwise. This whole unit test
+                        // is a lot less useful if we don't also check whether
+                        // the placeholder is being retrieved, then resolved,
+                        // firing off the resolve of the deferred depending on
+                        // this placeholder.
+                        expect(data.needed.get('b').isPlaceholder()).toBe(true);
+                        return data.needed.get('b');
+                    }
+                }
+            }),
+            ContainerClass = Barricade.create({
+                '@type': Object,
+                'c': {'@class': CClass},
+                'b': {'@class': BClass},
+                'a': {'@class': AClass}
+            }),
+            instance = ContainerClass.create({a: 'a', b: 'b', c: 'c'});
+
+        expect(instance.get('a')).toBe(instance.get('b'));
+        expect(instance.get('a')).toBe(instance.get('c'));
+        expect(instance.get('a').isPlaceholder()).toBe(false);
     });
 
     it('should resolve newly created objects correctly', function () {

@@ -25,10 +25,11 @@
                  Callback to execute when resolve happens.
         * @returns {Barricade.Deferred}
         */
-        create: function (classGetter, onResolve) {
+        create: function (classGetter, getter, onResolve) {
             var self = Object.create(this);
             self._isResolved = false;
             self._classGetter = classGetter;
+            self._getter = getter;
             self._onResolve = onResolve;
             return self;
         },
@@ -58,17 +59,25 @@
         * @param obj
         */
         resolve: function (obj) {
-            var ref;
+            var self = this,
+                neededValue;
+
+            function doResolve(realNeededValue) {
+                neededValue.off('replace', doResolve);
+                self._onResolve(realNeededValue);
+                self._isResolved = true;
+            }
 
             if (this._isResolved) {
                 throw new Error('Deferred already resolved');
             }
 
-            ref = this._onResolve(obj);
+            neededValue = this._getter(obj);
 
-            if (ref !== undefined) {
-                this._isResolved = true;
-                return ref;
+            if (neededValue.isPlaceholder()) {
+                neededValue.on('replace', doResolve);
+            } else {
+                doResolve(neededValue);
             }
         }
     };
