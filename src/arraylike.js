@@ -30,8 +30,8 @@
 
             this._data[index] = this._isCorrectType(newVal, elClass)
                 ? this._data[index] = newVal
-                : this._keyClassCreate(this._elSymbol, elClass,
-                                       newVal, newParameters);
+                : this.schema().keyClassCreate(this._elSymbol, newVal,
+                                               newParameters);
 
             this.emit('change', 'set', index, this._data[index], oldVal);
         };
@@ -47,10 +47,8 @@
         * @private
         */
         this._sift = function (json) {
-            var elClass = this.schema().keyClass(this._elSymbol);
             return json.map(function (el) {
-                return this._keyClassCreate(
-                    this._elSymbol, elClass, el);
+                return this.schema().keyClassCreate(this._elSymbol, el);
             }, this);
         };
 
@@ -141,8 +139,8 @@
             this._data.push(
                 this._isCorrectType(newValue, elClass)
                     ? newValue
-                    : this._keyClassCreate(this._elSymbol, elClass,
-                                           newValue, newParameters));
+                    : this.schema().keyClassCreate(this._elSymbol, newValue,
+                                                   newParameters));
 
             return this.emit('_addedElement', this._data.length - 1)
                        .emit('change', 'add', this._data.length - 1);

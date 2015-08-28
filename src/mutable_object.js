@@ -47,10 +47,9 @@
         * @private
         */
         this._sift = function (json) {
-            var elClass = this.schema().keyClass(this._elSymbol);
             return Object.keys(json).map(function (key) {
-                return this._keyClassCreate(this._elSymbol, elClass,
-                                            json[key], {id: key});
+                return this.schema().keyClassCreate(this._elSymbol, json[key],
+                                                    {id: key});
             }, this);
         };
 

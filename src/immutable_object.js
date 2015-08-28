@@ -27,9 +27,7 @@
         this._sift = function (json) {
             var self = this;
             return this.getKeys().reduce(function (objOut, key) {
-                objOut[key] = self._keyClassCreate(key,
-                                                   self.schema().keyClass(key),
-                                                   json[key]);
+                objOut[key] = self.schema().keyClassCreate(key, json[key]);
                 return objOut;
             }, {});
         };
@@ -46,9 +44,8 @@
                                         this.schema().keyClass(key))) {
                     this._data[key] = newValue;
                 } else {
-                    this._data[key] =
-                        this._keyClassCreate(key, this.schema().keyClass(key),
-                                             newValue, newParameters);
+                    this._data[key] = this.schema().keyClassCreate(
+                                          key, newValue, newParameters);
                 }
 
                 this.emit('change', 'set', key, this._data[key], oldVal);

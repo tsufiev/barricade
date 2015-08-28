@@ -52,16 +52,21 @@
             '@required': function (required) {
                 this._required = required;
             },
-            '@factory': function (factory) {
-                this._factory = factory;
+            '@factory': function () {
+                // do nothing for now
             },
             normalKey: function (key, extension, outerClass) {
                 if (!Object.hasOwnProperty.call(this, '_keyClasses')) {
                     this._keyClasses = Object.create(this._keyClasses);
+                    this._factories = Object.create(this._factories);
                 }
 
                 if (!(key in this._keyClasses)) {
                     this._keyClassList = this._keyClassList.concat(key);
+                }
+
+                if ('@factory' in extension) {
+                    this._factories[key] = extension['@factory'];
                 }
 
                 if ('@class' in extension) {
@@ -92,6 +97,12 @@
         * @memberof Barricade.Schema
         * @private
         */
+        _factories: {},
+
+        /**
+        * @memberof Barricade.Schema
+        * @private
+        */
         _keyClassList: [],
 
         /**
@@ -117,12 +128,6 @@
         * @private
         */
         _enum: null,
-
-        /**
-        * @memberof Barricade.Schema
-        * @private
-        */
-        _factory: null,
 
         /**
         * @memberof Barricade.Schema
@@ -239,6 +244,23 @@
         */
         keyClass: function (key) {
             return this._keyClasses[key];
+        },
+
+        /**
+        * Instantiates a key class. If there is a factory method defined for the
+          key (using @factory), it will be used instead of the key class.
+        * @memberof Barricade.Schema
+        * @param {String} key
+                 Sub-schema class to instantiate
+        * @param {JSON} json
+        * @param {Object} parameters
+          @returns {Barricade.Base}
+                   Instance of sub-schema class
+        */
+        keyClassCreate: function (key, json, parameters) {
+            return key in this._factories
+                ? this._factories[key](json, parameters)
+                : this.keyClass(key).create(json, parameters);
         },
 
         /**

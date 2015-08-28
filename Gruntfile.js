@@ -320,6 +320,7 @@ module.exports = function (grunt) {
                         'test/tag/enum_spec.js',
                         'test/tag/ref_spec.js',
                         'test/tag/default_spec.js',
+                        'test/tag/factory_spec.js',
                     ],
                     keepRunner: true
                 }

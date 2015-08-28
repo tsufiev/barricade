@@ -103,17 +103,6 @@
         * @memberof Barricade.Container
         * @private
         */
-        this._keyClassCreate = function (key, keyClass, json, parameters) {
-            var keyClassSchema = this.schema().keyClass(key).schema();
-            return keyClassSchema.has('factory')
-                ? keyClassSchema.get('factory')(json, parameters)
-                : keyClass.create(json, parameters);
-        };
-
-        /**
-        * @memberof Barricade.Container
-        * @private
-        */
         this._tryResolveOn = function (value) {
             if (!value.resolveWith(this)) {
                 this.emit('_resolveUp', value);
