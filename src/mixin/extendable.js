@@ -32,7 +32,12 @@
             enumerable: false,
             writable: false,
             value: function (extension, schema) {
+                var that = this;
                 var self = Object.create(this);
+
+                self.super = function(methodName) {
+                    return that.super(methodName);
+                };
 
                 if (getType(extension) === Function) {
                     self = extension.call(self);
@@ -48,7 +53,11 @@
     });
 
     Extendable.addProps = function (target, props) {
+        Object.defineProperty(target, '_methods', {value: {}});
         return Object.keys(props).reduce(function (object, prop) {
+            if (getType(props[prop]) === Function) {
+                object._methods[prop] = [props[prop]];
+            }
             return Object.defineProperty(object, prop, {
                 enumerable: true,
                 writable: true,

@@ -37,13 +37,57 @@
                  set to `this` and the arguments will be passed to `f`.
         */
         create: function (f) {
-            return function g() {
+            var hasOwnProperty = Object.prototype.hasOwnProperty;
+            function super_(methodName) {
+                var methods = this._methods[methodName];
+                if (methods) {
+                    for (var i = methods.length - 1; i > 0; i--) {
+                        if (methods[i][0] === g) {
+                            break;
+                        }
+                    }
+                    if (i > 0) {
+                        // there are preceding methods in a method chain
+                        return methods[i - 1][1];
+                    } else if (methods[0].length == 1) { // first method comes from a base class
+                        return methods[0];
+                    } else if (hasOwnProperty.call(this, '_nativeSuper')) {
+                        return this._nativeSuper(methodName);
+                    } else {
+                        throw Error('No suitable candidates for super("' + methodName + '") found!')
+                    }
+                }
+            }
+
+            function addMethod(methodName, method) {
+                if (!hasOwnProperty.call(this, '_methods')) {
+                    Object.defineProperty(this, '_methods', {value: {}});
+                }
+                this._methods[methodName] = this._methods[methodName] || [];
+                this._methods[methodName].push([g, method]);
+                return method;
+            }
+
+            function g() {
+                var possibleNameCollision = this.addMethod;
+                this.addMethod = addMethod;
                 var result = f.apply(this, arguments) || this;
-                if (!Object.prototype.hasOwnProperty.call(result, '_parents')) {
+                if (possibleNameCollision) {
+                    this.addMethod = possibleNameCollision;
+                } else {
+                    delete this.addMethod;
+                }
+                if (!hasOwnProperty.call(result, '_parents')) {
                     Object.defineProperty(result, '_parents', {value: []});
                 }
                 result._parents.push(g);
+                if (hasOwnProperty.call(this, 'super') &&
+                    !hasOwnProperty.call(this, '_nativeSuper')) {
+                    this._nativeSuper = this.super;
+                }
+                result.super = super_;
                 return result;
-            };
+            }
+            return g;
         }
     };
